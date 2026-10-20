@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sollar Cloud — Gestão Inteligente de Energia Solar</title>
+<title>Nuvem Solar — Gestão Inteligente de Energia</title>
 <style>
   :root{
     --navy:#101a2e; --navy-2:#16233d;
@@ -186,6 +186,7 @@
   .filter-card .fc-head{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--orange-2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.03em;}
   .filter-grid{display:grid;grid-template-columns:1.3fr 1.3fr 1fr 1fr;gap:14px;align-items:end;}
   .filter-grid.cols-5{grid-template-columns:1fr 1fr 1fr 1fr 1fr;}
+  .filter-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
   .field-group label{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;}
   .field-group input,.field-group select,.field-group textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--ink);font-family:inherit;background:#fff;}
   .field-group input:focus,.field-group select:focus{outline:2px solid var(--orange);outline-offset:1px;border-color:var(--orange);}
@@ -269,7 +270,7 @@
   @media (max-width:900px){
     .stats{grid-template-columns:repeat(2,1fr);}
     .panels{grid-template-columns:1fr;}
-    .filter-grid,.filter-grid.cols-5{grid-template-columns:1fr 1fr;}
+    .filter-grid,.filter-grid.cols-5,.filter-grid.cols-3{grid-template-columns:1fr 1fr;}
     .forecast-grid{grid-template-columns:repeat(3,1fr);}
     .sim-grid,.balance-summary,.projection-card .proj-breakdown{grid-template-columns:1fr;}
   }
@@ -287,7 +288,7 @@
     .banner h1{font-size:17px;}
     .stats{grid-template-columns:1fr 1fr;gap:10px;}
     .stat-card{padding:12px;}
-    .filter-grid,.filter-grid.cols-5{grid-template-columns:1fr;}
+    .filter-grid,.filter-grid.cols-5,.filter-grid.cols-3{grid-template-columns:1fr;}
     .forecast-grid{grid-template-columns:repeat(2,1fr);}
     .table-card{overflow-x:auto;}
     .table-card table{min-width:600px;}
@@ -309,7 +310,7 @@
         <path d="M5 27 L16 19 L27 27 L27 30 L5 30 Z" fill="#f4a531"/>
         <rect x="13" y="24" width="6" height="6" fill="#101a2e"/>
       </svg>
-      <span><b>Sollar</b> Cloud</span>
+      <span><b>Nuvem</b> Solar</span>
     </div>
     <div class="search">🔍 Buscar</div>
     <div class="nav">
@@ -328,14 +329,14 @@
       <div class="nav-section">Inteligência</div>
       <button class="nav-item" data-view="dicas" onclick="showView('dicas',this)"><span class="dot"></span> Dicas de Economia</button>
       <button class="nav-item" data-view="avisos" onclick="showView('avisos',this)"><span class="dot"></span> Avisos <span class="nbadge" id="navAlertBadge">0</span></button>
-      <button class="nav-item" data-view="simulador" onclick="showView('simulador',this)"><span class="dot"></span> Simulador</button>
+      <button class="nav-item" data-view="simulador" onclick="showView('simulador',this)"><span class="dot"></span> Simulador Real 🌍</button>
       <button class="nav-item" data-view="config" onclick="showView('config',this)"><span class="dot"></span> Configurações</button>
     </div>
 
     <button class="ai-launcher" onclick="toggleAI(true)">
       <span class="ico">✨</span>
       <span>
-        <b>Assistente Sollar</b>
+        <b>Assistente Nuvem</b>
         <span>Seu consultor de energia solar</span>
       </span>
     </button>
@@ -345,7 +346,7 @@
   <div class="main">
     <div class="topbar">
       <button class="hamburger" onclick="toggleSidebar()" aria-label="Abrir menu">☰</button>
-      <div class="crumbs">Sollar / <b id="crumbCurrent">Visão Geral</b></div>
+      <div class="crumbs">Nuvem Solar / <b id="crumbCurrent">Visão Geral</b></div>
       <div class="user-chip"><div class="avatar">MS</div> Maria Silva</div>
     </div>
 
@@ -579,37 +580,66 @@
         <div id="avisosList"></div>
       </div>
 
-      <!-- ===== SIMULADOR ===== -->
+      <!-- ===== SIMULADOR REAL (NOVO) ===== -->
       <div class="view" id="view-simulador">
         <div class="banner">
           <div>
             <div class="eyebrow">FERRAMENTA</div>
-            <h1>Simulador de Economia</h1>
-            <p>Descubra quanto você economizaria com diferentes cenários</p>
+            <h1>Simulador Solar Real</h1>
+            <p>Simulação baseada no seu CEP e na previsão meteorológica (Open-Meteo)</p>
           </div>
         </div>
 
         <div class="filter-card">
-          <div class="fc-head">🧮 Simular cenário</div>
-          <div class="filter-grid cols-5">
-            <div class="field-group"><label>Residência</label><select id="simResidencia" onchange="renderSimulador()"></select></div>
-            <div class="field-group"><label>Potência atual (kWp)</label><input type="number" id="simPotAtual" step="0.1"></div>
-            <div class="field-group"><label>Potência nova (kWp)</label><input type="number" id="simPotNova" step="0.1"></div>
-            <div class="field-group"><label>Custo do sistema (R$/kWp)</label><input type="number" id="simCusto" value="4500"></div>
-            <div class="field-group"><label>&nbsp;</label>
-              <button class="btn btn-orange" style="width:100%;" onclick="calcularSimulacao()">Calcular</button>
-            </div>
+          <div class="fc-head">📍 Dados da Instalação</div>
+          <div class="filter-grid cols-3">
+            <div class="field-group"><label>CEP</label><input type="text" id="simCep" placeholder="Ex: 29160-000" maxlength="9"></div>
+            <div class="field-group"><label>Qtd. de Painéis</label><input type="number" id="simQtdPaineis" value="10" min="1"></div>
+            <div class="field-group"><label>Potência do Painel (W)</label><input type="number" id="simPotPainel" value="550" min="50"></div>
           </div>
+          
+          <div class="fc-head" style="margin-top:14px;">⚙️ Parâmetros Técnicos e Financeiros</div>
+          <div class="filter-grid cols-3">
+            <div class="field-group"><label>Consumo Mensal (kWh)</label><input type="number" id="simConsumo" value="400"></div>
+            <div class="field-group"><label>Tarifa (R$/kWh)</label><input type="number" id="simTarifa" value="0.85" step="0.01"></div>
+            <div class="field-group"><label>Inclinação (graus)</label><input type="number" id="simInclinacao" value="20" min="0" max="90"></div>
+          </div>
+          <div class="filter-grid cols-3" style="margin-top:14px;">
+            <div class="field-group"><label>Orientação (Azimute)</label>
+              <select id="simAzimute">
+                <option value="180">Norte (180°)</option>
+                <option value="-135">Nordeste (-135°)</option>
+                <option value="-90">Leste (-90°)</option>
+                <option value="-45">Sudeste (-45°)</option>
+                <option value="0">Sul (0°)</option>
+                <option value="45">Sudoeste (45°)</option>
+                <option value="90">Oeste (90°)</option>
+                <option value="135">Noroeste (135°)</option>
+              </select>
+            </div>
+            <div class="field-group"><label>Eficiência do Inversor (%)</label><input type="number" id="simEficiencia" value="97" min="80" max="100"></div>
+            <div class="field-group"><label>Perdas Adicionais (%)</label><input type="number" id="simPerdas" value="10" min="0" max="30"></div>
+          </div>
+
+          <div class="btn-row" style="margin-top:20px;">
+            <button class="btn btn-orange" id="btnCalcularSimulacao" style="width:100%; justify-content:center; font-size:14px;" onclick="executarSimulacaoReal()">🚀 Calcular Simulação Real</button>
+          </div>
+        </div>
+
+        <div id="simLoading" style="display:none; text-align:center; padding:40px; color:var(--orange-2);">
+          <h3>Buscando dados e calculando...</h3>
+          <p>Consultando ViaCEP, Open-Meteo e processando irradiância...</p>
         </div>
 
         <div class="sim-grid" id="simResultado" style="display:none;">
           <div class="sim-result">
-            <h3>Comparativo</h3>
-            <div id="simComparativo"></div>
+            <h3>Resumo da Simulação</h3>
+            <div id="simResumoKpis" style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px;"></div>
+            <div id="simMensagemFinal" style="margin-top:16px; padding:12px; background:var(--orange-soft); border-radius:8px; font-size:12px; color:#8a5c0d; line-height:1.5;"></div>
           </div>
           <div class="sim-result">
-            <h3>Retorno do investimento</h3>
-            <div id="simRetorno"></div>
+            <h3>Geração Prevista (Próximos dias)</h3>
+            <div class="balance-chart" id="simGraficoBarras" style="height:200px; margin-top:20px;"></div>
           </div>
         </div>
       </div>
@@ -666,7 +696,7 @@
           <table>
             <thead><tr><th>Nome</th><th>Tipo</th><th>Data</th><th></th></tr></thead>
             <tbody>
-              <tr><td>Contrato de adesão — Sollar Cloud</td><td>Contrato</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
+              <tr><td>Contrato de adesão — Nuvem Solar</td><td>Contrato</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
               <tr><td>Manual do inversor Growatt 5000</td><td>Manual</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
               <tr><td>Laudo de vistoria — EDP ES</td><td>Laudo</td><td>20/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
               <tr><td>Certificado de garantia dos painéis</td><td>Certificado</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
@@ -677,7 +707,7 @@
 
       <!-- ===== COMUNIDADE ===== -->
       <div class="view" id="view-comunidade">
-        <div class="banner"><div><div class="eyebrow">MINHA CONTA</div><h1>Comunidade Sollar</h1><p>Compare seu desempenho com outras residências (dados anônimos)</p></div></div>
+        <div class="banner"><div><div class="eyebrow">MINHA CONTA</div><h1>Comunidade Nuvem</h1><p>Compare seu desempenho com outras residências (dados anônimos)</p></div></div>
         <div class="card">
           <h3>Sua residência vs. média da região (Serra - ES)</h3>
           <div class="sub">Comparação anônima com 342 residências próximas</div>
@@ -737,7 +767,7 @@
   <div class="ai-head">
     <div class="title">
       <div class="ic">✨</div>
-      <div><b>Assistente Sollar</b><span>Seu consultor de energia solar</span></div>
+      <div><b>Assistente Nuvem</b><span>Seu consultor de energia solar</span></div>
     </div>
     <button class="close-btn" onclick="toggleAI(false)">✕</button>
   </div>
@@ -746,14 +776,14 @@
     <div class="chip-row" id="aiChips"></div>
     <div class="section-label">Conversa</div>
     <div class="ai-chat-log" id="aiChatLog">
-      <div class="chat-msg ai">Olá, Maria! 👋 Sou o Assistente Sollar. Posso te ajudar a entender sua conta de luz, prever sua geração solar, descobrir como economizar mais ou tirar dúvidas sobre seu sistema. O que você quer saber?</div>
+      <div class="chat-msg ai">Olá, Maria! 👋 Sou o Assistente Nuvem. Posso te ajudar a entender sua conta de luz, prever sua geração solar, descobrir como economizar mais ou tirar dúvidas sobre seu sistema. O que você quer saber?</div>
     </div>
   </div>
   <div class="ai-input-bar">
-    <textarea id="aiQuestion" rows="1" placeholder="Pergunte ao Assistente Sollar..." onkeydown="handleAIKeydown(event)" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';"></textarea>
+    <textarea id="aiQuestion" rows="1" placeholder="Pergunte ao Assistente Nuvem..." onkeydown="handleAIKeydown(event)" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';"></textarea>
     <button class="ai-send-btn" onclick="askAI()">➤</button>
   </div>
-  <div class="ai-footer">Respostas baseadas em dados simulados da plataforma Sollar</div>
+  <div class="ai-footer">Respostas baseadas em dados simulados da plataforma</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -783,50 +813,6 @@ const residencias = [
       {dia:'16/08', diaSemana:'Dom', tempo:'Chuva', icone:'🌧️', temp:'18–24°C', condicao:'chuva', irradiancia:2.2, geracaoPrevista:8.5, margem:25},
       {dia:'17/08', diaSemana:'Seg', tempo:'Parcial. nublado', icone:'⛅', temp:'19–28°C', condicao:'parcial', irradiancia:5.3, geracaoPrevista:20.5, margem:25},
       {dia:'18/08', diaSemana:'Ter', tempo:'Ensolarado', icone:'☀️', temp:'20–31°C', condicao:'sol', irradiancia:6.8, geracaoPrevista:26.4, margem:25},
-    ]
-  },
-  {
-    id:'RES-002', nome:'Residência Oliveira', apelido:'Casa Oliveira',
-    endereco:'Av. Central, 456 · Vitória/ES',
-    distribuidora:'EDP Espírito Santo',
-    potenciaInstalada:8.2, inclinacao:15, orientacao:'Norte',
-    tarifa:0.74, tipoLigacao:'Trifásico',
-    orcamentoMensal:120,
-    consumoHoje:14.2, geracaoHoje:22.3,
-    consumoMes:512, geracaoMes:678,
-    consumoDiario:[14.2,15.1,13.8,16.2,14.8,13.9,15.4,14.7,13.6,15.8,14.3,15.1,16.4,14.2,13.9,15.2,14.8,15.6,14.1,13.7,15.3,14.6,15.9,14.4,13.8,15.1,14.9,15.4,14.2,15.6],
-    geracaoDiaria:[28.1,27.5,29.2,26.8,30.1,28.4,27.9,28.6,29.3,27.2,28.8,28.1,29.6,27.4,28.7,29.1,28.3,28.9,27.8,28.4,29.2,28.7,29.5,28.1,27.6,28.9,29.4,28.2,27.9,29.1],
-    inversorOnline:true,
-    previsaoGeracao:[
-      {dia:'12/08', diaSemana:'Hoje', tempo:'Ensolarado', icone:'☀️', temp:'18–29°C', condicao:'sol', irradiancia:6.4, geracaoPrevista:37.6, margem:15},
-      {dia:'13/08', diaSemana:'Qui', tempo:'Ensolarado', icone:'☀️', temp:'19–30°C', condicao:'sol', irradiancia:6.6, geracaoPrevista:38.9, margem:15},
-      {dia:'14/08', diaSemana:'Sex', tempo:'Parcial. nublado', icone:'⛅', temp:'20–28°C', condicao:'parcial', irradiancia:5.1, geracaoPrevista:29.9, margem:15},
-      {dia:'15/08', diaSemana:'Sáb', tempo:'Nublado', icone:'☁️', temp:'19–26°C', condicao:'nublado', irradiancia:3.8, geracaoPrevista:22.3, margem:25},
-      {dia:'16/08', diaSemana:'Dom', tempo:'Chuva', icone:'🌧️', temp:'18–24°C', condicao:'chuva', irradiancia:2.2, geracaoPrevista:12.9, margem:25},
-      {dia:'17/08', diaSemana:'Seg', tempo:'Parcial. nublado', icone:'⛅', temp:'19–28°C', condicao:'parcial', irradiancia:5.3, geracaoPrevista:31.1, margem:25},
-      {dia:'18/08', diaSemana:'Ter', tempo:'Ensolarado', icone:'☀️', temp:'20–31°C', condicao:'sol', irradiancia:6.8, geracaoPrevista:40.1, margem:25},
-    ]
-  },
-  {
-    id:'RES-003', nome:'Residência Santos', apelido:'Casa Santos',
-    endereco:'Rua das Palmeiras, 89 · Vila Velha/ES',
-    distribuidora:'EDP Espírito Santo',
-    potenciaInstalada:3.2, inclinacao:25, orientacao:'Norte',
-    tarifa:0.71, tipoLigacao:'Monofásico',
-    orcamentoMensal:60,
-    consumoHoje:5.1, geracaoHoje:6.8,
-    consumoMes:178, geracaoMes:238,
-    consumoDiario:[5.8,6.2,5.4,5.9,6.1,5.5,5.7,6.3,5.9,5.6,6.0,5.4,5.8,6.2,5.7,5.9,6.1,5.5,5.8,6.0,5.6,5.9,6.3,5.7,5.5,5.8,6.1,5.9,5.6,5.8],
-    geracaoDiaria:[10.8,10.2,11.1,9.8,11.5,10.6,10.3,9.9,10.7,10.4,11.2,10.8,11.4,10.1,10.5,9.7,10.9,10.6,10.3,11.0,10.2,10.8,11.3,10.5,10.1,10.7,10.4,10.9,9.9,10.6],
-    inversorOnline:true,
-    previsaoGeracao:[
-      {dia:'12/08', diaSemana:'Hoje', tempo:'Ensolarado', icone:'☀️', temp:'18–29°C', condicao:'sol', irradiancia:6.4, geracaoPrevista:14.8, margem:15},
-      {dia:'13/08', diaSemana:'Qui', tempo:'Ensolarado', icone:'☀️', temp:'19–30°C', condicao:'sol', irradiancia:6.6, geracaoPrevista:15.2, margem:15},
-      {dia:'14/08', diaSemana:'Sex', tempo:'Parcial. nublado', icone:'⛅', temp:'20–28°C', condicao:'parcial', irradiancia:5.1, geracaoPrevista:11.8, margem:15},
-      {dia:'15/08', diaSemana:'Sáb', tempo:'Nublado', icone:'☁️', temp:'19–26°C', condicao:'nublado', irradiancia:3.8, geracaoPrevista:8.8, margem:25},
-      {dia:'16/08', diaSemana:'Dom', tempo:'Chuva', icone:'🌧️', temp:'18–24°C', condicao:'chuva', irradiancia:2.2, geracaoPrevista:5.1, margem:25},
-      {dia:'17/08', diaSemana:'Seg', tempo:'Parcial. nublado', icone:'⛅', temp:'19–28°C', condicao:'parcial', irradiancia:5.3, geracaoPrevista:12.3, margem:25},
-      {dia:'18/08', diaSemana:'Ter', tempo:'Ensolarado', icone:'☀️', temp:'20–31°C', condicao:'sol', irradiancia:6.8, geracaoPrevista:15.7, margem:25},
     ]
   }
 ];
@@ -933,7 +919,7 @@ function analyzeResidencia(res){
       titulo:'Sistema operando normalmente',
       evidencia:`Consumo, geração e autoconsumo da ${res.apelido} estão dentro do esperado.`,
       consequencia:'Nenhuma ação necessária no momento.',
-      recomendacao:'Continue monitorando pelo painel Sollar.'
+      recomendacao:'Continue monitorando pelo painel.'
     });
   }
 
@@ -951,14 +937,11 @@ rebuildIssues();
 
 function fmtMoney(v){ return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2}); }
 function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(1) + '%'; }
-function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 function showToast(msg){
   const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(window._toastTimer);
   window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
 }
-function openModal(id){ document.getElementById(id)?.classList.add('open'); }
-function closeModal(id){ document.getElementById(id)?.classList.remove('open'); }
 function toggleSidebar(force){
   const sb = document.getElementById('sidebarEl');
   const ov = document.getElementById('sidebarOverlay');
@@ -975,7 +958,7 @@ function toggleAI(open){
 const crumbs = {
   dashboard:'Visão Geral', balanco:'Balanço Energético', previsao:'Previsão de Geração',
   relatorio:'Relatórios', dicas:'Dicas de Economia', avisos:'Avisos',
-  simulador:'Simulador de Economia', config:'Configurações',
+  simulador:'Simulador Real', config:'Configurações',
   conta:'Meus Dados', faturas:'Histórico de Faturas', documentos:'Documentos', comunidade:'Comunidade'
 };
 function showView(name, btn){
@@ -992,13 +975,13 @@ function showView(name, btn){
   if(name==='relatorio') renderRelList();
   if(name==='dicas') renderDicas();
   if(name==='avisos') renderAvisos();
-  if(name==='simulador') renderSimulador();
+  if(name==='simulador') renderSimuladorAntigo();
   if(window.innerWidth <= 640) toggleSidebar(false);
 }
 
 function populateSelects(){
   const html = residencias.map(r=>`<option value="${r.id}">${r.nome} — ${r.apelido}</option>`).join('');
-  ['balResidencia','prevResidencia','dicasResidencia','simResidencia'].forEach(id=>{
+  ['balResidencia','prevResidencia','dicasResidencia'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.innerHTML = html;
   });
@@ -1292,66 +1275,174 @@ function renderAvisos(){
   `).join('');
 }
 
-function renderSimulador(){
-  const res = residenteIndex[document.getElementById('simResidencia').value] || residencias[0];
-  document.getElementById('simPotAtual').value = res.potenciaInstalada;
-  document.getElementById('simPotNova').value = res.potenciaInstalada;
+/* =========================================================================
+   SIMULADOR REAL — INTEGRAÇÃO COM APIs (Python -> JavaScript)
+   ========================================================================= */
+
+function renderSimuladorAntigo(){
+  // Apenas para não dar erro na função showView
 }
 
-function calcularSimulacao(){
-  const res = residenteIndex[document.getElementById('simResidencia').value] || residencias[0];
-  const potAtual = parseFloat(document.getElementById('simPotAtual').value) || res.potenciaInstalada;
-  const potNova = parseFloat(document.getElementById('simPotNova').value) || potAtual;
-  const custoKWp = parseFloat(document.getElementById('simCusto').value) || 4500;
+async function executarSimulacaoReal() {
+  const btn = document.getElementById('btnCalcularSimulacao');
+  const loading = document.getElementById('simLoading');
+  const resultDiv = document.getElementById('simResultado');
+  
+  // Pegar inputs
+  const cepInput = document.getElementById('simCep').value.trim();
+  const qtdPaineis = parseInt(document.getElementById('simQtdPaineis').value) || 10;
+  const potPainel = parseFloat(document.getElementById('simPotPainel').value) || 550;
+  const consumoMensal = parseFloat(document.getElementById('simConsumo').value) || 400;
+  const tarifa = parseFloat(document.getElementById('simTarifa').value) || 0.85;
+  const inclinacao = parseInt(document.getElementById('simInclinacao').value) || 20;
+  const azimute = parseInt(document.getElementById('simAzimute').value) || 180;
+  const eficienciaInversor = (parseFloat(document.getElementById('simEficiencia').value) || 97) / 100;
+  const perdasAdicionais = parseFloat(document.getElementById('simPerdas').value) || 10;
 
-  const ganhoPotencia = potNova - potAtual;
-  const fatorGeracaoMensal = res.geracaoMes / res.potenciaInstalada;
-  const geracaoAtual = res.geracaoMes;
-  const geracaoNova = potNova * fatorGeracaoMensal;
-  const ganhoGeracao = geracaoNova - geracaoAtual;
+  const cepLimpo = cepInput.replace(/\D/g, '');
+  if (cepLimpo.length !== 8) {
+    showToast('Digite um CEP válido com 8 números.');
+    return;
+  }
 
-  const balAtual = calcularBalanco(res);
-  const consumoAtual = res.consumoMes;
+  // Configurar UI de loading
+  btn.disabled = true;
+  btn.textContent = 'Buscando dados...';
+  loading.style.display = 'block';
+  resultDiv.style.display = 'none';
 
-  const autoconsumoNovo = Math.min(consumoAtual, geracaoNova);
-  const excedenteNovo = Math.max(0, geracaoNova - consumoAtual);
-  const consumoRedeNovo = Math.max(0, consumoAtual - geracaoNova);
-  const custoRedeNovo = consumoRedeNovo * res.tarifa;
-  const custoFioBNovo = excedenteNovo * FIO_B_PART_TARIFA * FIO_B_PERCENT * res.tarifa;
-  const custoDispNovo = consumoRedeNovo === 0 ? 50 * res.tarifa : 0;
-  const faturaNova = custoRedeNovo + custoFioBNovo + custoDispNovo;
+  try {
+    // 1. Buscar CEP (ViaCEP)
+    const resCep = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    const dataCep = await resCep.json();
+    if (dataCep.erro) throw new Error('CEP não encontrado. Confira os números.');
 
-  const economiaMensal = balAtual.faturaTotal - faturaNova;
-  const investimento = ganhoPotencia * custoKWp;
-  const paybackMeses = economiaMensal > 0 ? investimento / economiaMensal : Infinity;
-  const paybackAnos = paybackMeses / 12;
+    const cidade = dataCep.localidade;
+    const uf = dataCep.uf;
+    const nomeEstado = dataCep.estado;
 
-  document.getElementById('simResultado').style.display = 'grid';
+    // 2. Buscar Coordenadas (Open-Meteo Geocoding)
+    const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=10&language=pt&format=json`);
+    const dataGeo = await resGeo.json();
+    if (!dataGeo.results || dataGeo.results.length === 0) throw new Error('Não foi possível obter coordenadas para esta cidade.');
 
-  document.getElementById('simComparativo').innerHTML = `
-    <div style="display:grid;gap:10px;margin-top:8px;">
-      <div class="fd-row"><span>Potência atual</span><b>${potAtual.toFixed(1)} kWp</b></div>
-      <div class="fd-row"><span>Potência nova</span><b>${potNova.toFixed(1)} kWp (+${ganhoPotencia.toFixed(1)} kWp)</b></div>
-      <div class="fd-row"><span>Geração atual</span><b>${geracaoAtual.toFixed(0)} kWh/mês</b></div>
-      <div class="fd-row"><span>Geração nova</span><b>${geracaoNova.toFixed(0)} kWh/mês (+${ganhoGeracao.toFixed(0)})</b></div>
-      <div class="fd-row"><span>Fatura atual</span><b>${fmtMoney(balAtual.faturaTotal)}</b></div>
-      <div class="fd-row"><span>Fatura nova</span><b style="color:var(--green);">${fmtMoney(faturaNova)}</b></div>
-      <div class="fd-row"><span>Economia mensal</span><b style="color:var(--green);font-size:14px;">${fmtMoney(economiaMensal)}</b></div>
-    </div>
-  `;
+    // Tenta achar a cidade exata no estado
+    let local = dataGeo.results.find(r => r.country_code === 'BR' && r.admin1 === nomeEstado && r.name === cidade);
+    if (!local) local = dataGeo.results.find(r => r.country_code === 'BR' && r.name === cidade);
+    if (!local) local = dataGeo.results[0]; // Fallback
 
-  document.getElementById('simRetorno').innerHTML = `
-    <div style="display:grid;gap:10px;margin-top:8px;">
-      <div class="fd-row"><span>Investimento</span><b>${fmtMoney(investimento)}</b></div>
-      <div class="fd-row"><span>Payback</span><b style="color:var(--orange-2);font-size:14px;">${paybackMeses.toFixed(0)} meses (${paybackAnos.toFixed(1)} anos)</b></div>
-      <div class="fd-row"><span>Economia em 25 anos</span><b style="color:var(--green);">${fmtMoney(economiaMensal * 12 * 25)}</b></div>
-      <div style="padding:12px;background:var(--orange-soft);border-radius:8px;font-size:11.5px;color:#8a5c0d;margin-top:8px;">
-        ⚠ Simulação baseada em dados históricos. A geração real pode variar com clima, sombreamento e condições locais.
+    const lat = local.latitude;
+    const lon = local.longitude;
+
+    // 3. Buscar Previsão do Tempo (Open-Meteo Forecast)
+    const urlForecast = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=global_tilted_irradiance,temperature_2m,cloud_cover&tilt=${inclinacao}&azimuth=${azimute}&forecast_days=16&timezone=auto`;
+    const resForecast = await fetch(urlForecast);
+    const dataForecast = await resForecast.json();
+
+    if (!dataForecast.hourly || !dataForecast.hourly.time) throw new Error('A API não retornou dados horários.');
+
+    // 4. Processar Dados e Calcular Geração (Lógica traduzida do Python)
+    const times = dataForecast.hourly.time;
+    const irradiancias = dataForecast.hourly.global_tilted_irradiance;
+    const temps = dataForecast.hourly.temperature_2m;
+
+    let totalGeracao = 0;
+    const geracaoDiaria = {};
+    const potenciaKwp = (qtdPaineis * potPainel) / 1000;
+    const noct = 45; // Valor padrão
+    const coefTemp = -0.35; // Valor padrão
+
+    for (let i = 0; i < times.length; i++) {
+      const dt = new Date(times[i]);
+      const diaStr = times[i].split('T')[0];
+      const irradiancia = Math.max(0, irradiancias[i] || 0);
+      const tempAmb = temps[i] || 25;
+
+      // Fórmulas do código Python
+      const tempCelula = tempAmb + ((noct - 20) / 800) * irradiancia;
+      const fatorTemp = Math.max(0, 1 + (coefTemp / 100) * (tempCelula - 25));
+      const potDc = potenciaKwp * (irradiancia / 1000) * fatorTemp;
+      let potAc = potDc * eficienciaInversor * (1 - perdasAdicionais / 100);
+
+      // Geração no intervalo de 1h
+      const geracaoHora = potAc;
+
+      if (!geracaoDiaria[diaStr]) geracaoDiaria[diaStr] = 0;
+      geracaoDiaria[diaStr] += geracaoHora;
+      totalGeracao += geracaoHora;
+    }
+
+    // 5. Resumo
+    const diasComDados = Object.keys(geracaoDiaria).length;
+    const mediaDiaria = totalGeracao / diasComDados;
+    const projecaoMensal = mediaDiaria * 30.4375;
+    const consumoCoberto = Math.min(projecaoMensal, consumoMensal);
+    const valorBruto = consumoCoberto * tarifa;
+    const percentualCobertura = consumoMensal > 0 ? (projecaoMensal / consumoMensal) * 100 : 0;
+
+    // Renderizar Resultados
+    document.getElementById('simResumoKpis').innerHTML = `
+      <div class="stat-card" style="box-shadow:none; padding:10px;">
+        <div class="ic" style="background:var(--blue); width:32px; height:32px; font-size:14px;">📍</div>
+        <div><div class="val" style="font-size:14px;">${cidade}/${uf}</div><div class="lbl">Localização encontrada</div></div>
       </div>
-    </div>
-  `;
+      <div class="stat-card" style="box-shadow:none; padding:10px;">
+        <div class="ic" style="background:var(--orange); width:32px; height:32px; font-size:14px;">⚡</div>
+        <div><div class="val" style="font-size:14px;">${potenciaKwp.toFixed(2)} kWp</div><div class="lbl">Potência Instalada</div></div>
+      </div>
+      <div class="stat-card" style="box-shadow:none; padding:10px;">
+        <div class="ic" style="background:var(--green); width:32px; height:32px; font-size:14px;">📈</div>
+        <div><div class="val" style="font-size:14px;">${mediaDiaria.toFixed(1)} kWh</div><div class="lbl">Média Diária Prevista</div></div>
+      </div>
+      <div class="stat-card" style="box-shadow:none; padding:10px;">
+        <div class="ic" style="background:var(--purple); width:32px; height:32px; font-size:14px;">💰</div>
+        <div><div class="val" style="font-size:14px;">R$ ${valorBruto.toFixed(2)}</div><div class="lbl">Economia Bruta Estimada</div></div>
+      </div>
+    `;
+
+    document.getElementById('simMensagemFinal').innerHTML = `
+      A geração projetada para 1 mês (baseada na previsão de 16 dias) é de <b>${projecaoMensal.toFixed(0)} kWh</b>.<br>
+      Isso equivale a aproximadamente <b>${percentualCobertura.toFixed(1)}%</b> do seu consumo mensal informado (${consumoMensal} kWh).<br><br>
+      <i>Nota: Esta projeção mensal extrapola a média diária da previsão disponível para 30,4 dias. A conta real depende do perfil horário, autoconsumo, regras de compensação e impostos.</i>
+    `;
+
+    // Renderizar Gráfico Simples (CSS) dos próximos dias
+    const diasArr = Object.keys(geracaoDiaria).slice(0, 7); // Pega os 7 primeiros dias
+    const maxGeracao = Math.max(...diasArr.map(d => geracaoDiaria[d]));
+    const scale = 150 / maxGeracao;
+
+    let htmlBarras = '';
+    diasArr.forEach(dia => {
+      const val = geracaoDiaria[dia];
+      const altura = Math.round(val * scale);
+      const labelDia = dia.split('-').slice(1).reverse().join('/'); // MM/DD -> DD/MM simplificado
+      htmlBarras += `
+        <div class="balance-bar-wrap">
+          <div class="balance-bar-group">
+            <div class="balance-bar geracao" style="height:${altura}px; width:20px;" title="${val.toFixed(1)} kWh"></div>
+          </div>
+          <div class="balance-lbl" style="margin-top:6px;">${labelDia}</div>
+        </div>
+      `;
+    });
+    document.getElementById('simGraficoBarras').innerHTML = htmlBarras;
+    resultDiv.style.display = 'grid';
+
+  } catch (error) {
+    console.error(error);
+    showToast('Erro na simulação: ' + error.message);
+    alert('Ocorreu um erro ao calcular: ' + error.message);
+  } finally {
+    // Restaurar UI
+    btn.disabled = false;
+    btn.textContent = '🚀 Calcular Simulação Real';
+    loading.style.display = 'none';
+  }
 }
 
+/* =========================================================================
+   ASSISTENTE E INICIALIZAÇÃO
+   ========================================================================= */
 const aiSuggestions = [
   'Quanto vou pagar este mês?',
   'Qual a previsão de geração para amanhã?',
@@ -1383,8 +1474,6 @@ function appendAIMessage(html){
   scrollAIToBottom();
 }
 
-let aiContext = { lastResId: null, lastTopic: null };
-
 function askAI(preset){
   const input = document.getElementById('aiQuestion');
   const q = (typeof preset === 'string' ? preset : input.value).trim();
@@ -1400,48 +1489,20 @@ function askAI(preset){
   const lower = q.toLowerCase();
   const res = residencias[0];
   const bal = calcularBalanco(res);
-  const proj = preverConsumo(res);
   let answer;
 
   if(/quanto.*(pagar|conta|fatura)|fatura.*(prevista|mês)|vou pagar/.test(lower)){
-    answer = `Sua <b>fatura prevista</b> para agosto/2026 é de <b>${fmtMoney(bal.faturaTotal)}</b> (margem ±12%).<br><br>Detalhamento:<br>• Consumo da rede: ${bal.consumoRede.toFixed(0)} kWh = ${fmtMoney(bal.custoRede)}<br>• Fio B sobre excedente: ${fmtMoney(bal.custoFioB)}<br>• Custo de disponibilidade: ${fmtMoney(bal.custoDisponibilidade)}<br><br>Você já economizou <b>${fmtMoney(bal.economiaSolar)}</b> este mês graças ao sistema solar.`;
-    aiContext.lastResId = res.id; aiContext.lastTopic = 'fatura';
+    answer = `Sua <b>fatura prevista</b> para agosto/2026 é de <b>${fmtMoney(bal.faturaTotal)}</b> (margem ±12%).<br><br>Detalhamento:<br>• Consumo da rede: ${bal.consumoRede.toFixed(0)} kWh = ${fmtMoney(bal.custoRede)}<br>• Fio B sobre excedente: ${fmtMoney(bal.custoFioB)}<br><br>Você já economizou <b>${fmtMoney(bal.economiaSolar)}</b> este mês graças ao sistema solar.`;
+  }
+  else if(/simula[cç][aã]o|simulador|cep/.test(lower)){
+    answer = `Para usar o simulador real, clique na aba <b>"Simulador Real 🌍"</b> no menu lateral. Lá você pode digitar o CEP da sua casa e o sistema vai buscar as coordenadas e a previsão do tempo na Open-Meteo para calcular a geração exata.`;
   }
   else if(/previs[aã]o.*(gera[cç][aã]o|solar|amanh[aã])|vai gerar/.test(lower)){
     const amanha = res.previsaoGeracao[1];
-    answer = `<b>Previsão de geração para amanhã (${amanha.dia}):</b><br>${amanha.icone} ${amanha.tempo}, ${amanha.temp}<br>Geração prevista: <b>${amanha.geracaoPrevista.toFixed(1)} kWh</b> (±${amanha.margem}%)<br><br>Isso equivale a aproximadamente <b>${fmtMoney(amanha.geracaoPrevista * res.tarifa)}</b> de energia. É um dia ${amanha.condicao==='sol'?'ótimo':'razoável'} para concentrar o consumo de equipamentos de alto gasto entre 10h e 15h.`;
-    aiContext.lastResId = res.id; aiContext.lastTopic = 'previsao';
-  }
-  else if(/autoconsumo|aumentar|maximizar|usar mais/.test(lower)){
-    const pct = (bal.autoconsumo/bal.geracao)*100;
-    answer = `Seu autoconsumo atual é de <b>${pct.toFixed(0)}%</b> — ou seja, de cada 100 kWh gerados, ${pct.toFixed(0)} são consumidos na hora e ${(100-pct).toFixed(0)} vão para a rede.<br><br><b>Para aumentar:</b><br>1. Programe máquina de lavar, lava-louças e chuveiro entre 10h e 15h<br>2. Evite ligar esses equipamentos à noite<br>3. Se possível, instale um sistema de aquecimento solar de água (reduz consumo do chuveiro elétrico)<br><br>Potencial de economia: <b>${fmtMoney(bal.excedente * res.tarifa * FIO_B_PART_TARIFA * FIO_B_PERCENT)}</b>/mês em Fio B evitado.`;
-    aiContext.lastResId = res.id; aiContext.lastTopic = 'autoconsumo';
-  }
-  else if(/ar.?condicionado|ligar agora|vale a pena/.test(lower)){
-    const hora = new Date().getHours();
-    const geracaoAgora = hora >= 10 && hora <= 15 ? 'alta' : hora >= 8 && hora <= 17 ? 'moderada' : 'baixa';
-    const previsao = res.previsaoGeracao[0];
-    answer = `Agora são ${hora}h. A geração solar neste horário é <b>${geracaoAgora}</b>.<br><br>${geracaoAgora === 'alta' ? '✅ <b>Vale a pena ligar!</b> Você está no horário de maior geração solar. A energia do ar-condicionado virá principalmente do seu sistema, sem custo adicional.' : geracaoAgora === 'moderada' ? '⚠ <b>Cuidado:</b> a geração está moderada. Se possível, aguarde até 10h-15h para ligar equipamentos de alto consumo.' : '❌ <b>Não é o melhor momento.</b> A geração solar está baixa. Considere esperar até amanhã entre 10h e 15h.'}<br><br>Previsão para hoje: ${previsao.icone} ${previsao.tempo}, ${previsao.geracaoPrevista.toFixed(1)} kWh.`;
-    aiContext.lastTopic = 'consumo_horario';
-  }
-  else if(/gerou menos|abaixo do esperado|problema|falha/.test(lower)){
-    const issues = analyzeResidencia(res).filter(i=>i.severidade!=='normal');
-    if(issues.length){
-      answer = `Encontrei <b>${issues.length} ponto(s) de atenção</b> na sua residência:<br><br>${issues.map((i,idx)=>`<b>${idx+1}. ${i.titulo}</b><br>${i.evidencia}<br>Recomendação: ${i.recomendacao}`).join('<br><br>')}`;
-      aiContext.lastResId = res.id; aiContext.lastTopic = 'problema';
-    } else {
-      answer = `Não identifiquei nenhum problema no momento. Seu sistema está operando normalmente. 🟢`;
-    }
-  }
-  else if(/economizando|economia|quanto.*economiz/.test(lower)){
-    answer = `Você está economizando <b>${fmtMoney(bal.economiaSolar)}</b> este mês com o sistema solar.<br><br>Isso equivale a <b>${((bal.economiaSolar / (bal.consumo * res.tarifa)) * 100).toFixed(0)}%</b> de economia em relação ao que pagaria sem solar.<br><br>Em 12 meses, isso representa cerca de <b>${fmtMoney(bal.economiaSolar * 12)}</b> economizados. 💰`;
-    aiContext.lastResId = res.id; aiContext.lastTopic = 'economia';
-  }
-  else if(/ajuda|como funciona|tutorial|navegar/.test(lower)){
-    answer = `Posso te ajudar com:<br>• <b>Fatura</b> — "quanto vou pagar este mês?"<br>• <b>Previsão de geração</b> — "qual a previsão para amanhã?"<br>• <b>Autoconsumo</b> — "como aumentar meu autoconsumo?"<br>• <b>Consumo em tempo real</b> — "vale a pena ligar o ar-condicionado agora?"<br>• <b>Economia</b> — "estou economizando o suficiente?"<br>• <b>Problemas</b> — "meu sistema gerou menos que o esperado?"<br><br>Pergunte o que quiser sobre seu sistema solar!`;
+    answer = `<b>Previsão de geração para amanhã (${amanha.dia}):</b><br>${amanha.icone} ${amanha.tempo}, ${amanha.temp}<br>Geração prevista: <b>${amanha.geracaoPrevista.toFixed(1)} kWh</b> (±${amanha.margem}%)`;
   }
   else {
-    answer = `Não encontrei dados suficientes para responder a essa pergunta com precisão. Posso ajudar com: fatura, previsão de geração, autoconsumo, economia, consumo em tempo real ou problemas no sistema. Tente reformular ou escolha uma das sugestões.`;
+    answer = `Não encontrei dados suficientes para responder a essa pergunta. Posso ajudar com: fatura, previsão de geração, autoconsumo ou uso do simulador real.`;
   }
 
   setTimeout(()=>appendAIMessage(answer), 400);
@@ -1454,7 +1515,6 @@ renderPrevisao();
 renderRelList();
 renderDicas();
 renderAvisos();
-renderSimulador();
 renderChips();
 </script>
 </body>
