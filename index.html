@@ -326,7 +326,7 @@
       <button class="nav-item" data-view="previsao" onclick="showView('previsao',this)"><span class="dot"></span> Previsão de Geração</button>
       <button class="nav-item" data-view="relatorio" onclick="showView('relatorio',this)"><span class="dot"></span> Relatórios</button>
 
-      <div class="nav-section">Inteligência</div>
+         <div class="nav-section">Inteligência</div>
       <button class="nav-item" data-view="dicas" onclick="showView('dicas',this)"><span class="dot"></span> Dicas de Economia</button>
       <button class="nav-item" data-view="avisos" onclick="showView('avisos',this)"><span class="dot"></span> Avisos <span class="nbadge" id="navAlertBadge">0</span></button>
       <button class="nav-item" data-view="simulador" onclick="showView('simulador',this)"><span class="dot"></span> Simulador Real 🌍</button>
@@ -580,7 +580,7 @@
         <div id="avisosList"></div>
       </div>
 
-      <!-- ===== SIMULADOR REAL (NOVO) ===== -->
+      <!-- ===== SIMULADOR REAL ===== -->
       <div class="view" id="view-simulador">
         <div class="banner">
           <div>
@@ -790,7 +790,7 @@
 
 <script>
 /* =========================================================================
-   DADOS SIMULADOS — RESIDÊNCIAS COM SISTEMA SOLAR
+   DADOS SIMULADOS (FALLBACK) — SERÃO SUBSTITUÍDOS PELO DJANGO
    ========================================================================= */
 const residencias = [
   {
@@ -810,7 +810,7 @@ const residencias = [
       {dia:'13/08', diaSemana:'Qui', tempo:'Ensolarado', icone:'☀️', temp:'19–30°C', condicao:'sol', irradiancia:6.6, geracaoPrevista:25.6, margem:15},
       {dia:'14/08', diaSemana:'Sex', tempo:'Parcial. nublado', icone:'⛅', temp:'20–28°C', condicao:'parcial', irradiancia:5.1, geracaoPrevista:19.7, margem:15},
       {dia:'15/08', diaSemana:'Sáb', tempo:'Nublado', icone:'☁️', temp:'19–26°C', condicao:'nublado', irradiancia:3.8, geracaoPrevista:14.7, margem:25},
-      {dia:'16/08', diaSemana:'Dom', tempo:'Chuva', icone:'🌧️', temp:'18–24°C', condicao:'chuva', irradiancia:2.2, geracaoPrevista:8.5, margem:25},
+       {dia:'16/08', diaSemana:'Dom', tempo:'Chuva', icone:'🌧️', temp:'18–24°C', condicao:'chuva', irradiancia:2.2, geracaoPrevista:8.5, margem:25},
       {dia:'17/08', diaSemana:'Seg', tempo:'Parcial. nublado', icone:'⛅', temp:'19–28°C', condicao:'parcial', irradiancia:5.3, geracaoPrevista:20.5, margem:25},
       {dia:'18/08', diaSemana:'Ter', tempo:'Ensolarado', icone:'☀️', temp:'20–31°C', condicao:'sol', irradiancia:6.8, geracaoPrevista:26.4, margem:25},
     ]
@@ -989,11 +989,29 @@ function populateSelects(){
   if(avRes) avRes.innerHTML = '<option value="">Todas</option>' + html;
 }
 
-function renderDashboard(){
+async function renderDashboard(){
+  // 1. Busca os dados reais do banco de dados Django
+  try {
+      const resposta = await fetch('http://127.0.0.1:8000/api/residencias/');
+      const dadosDjango = await resposta.json();
+      
+      if (dadosDjango.length > 0) {
+          const dbRes = dadosDjango[0]; 
+          residencias[0].nome = dbRes.nome;
+          residencias[0].apelido = dbRes.apelido;
+          residencias[0].potenciaInstalada = parseFloat(dbRes.potencia_instalada);
+          residencias[0].tarifa = parseFloat(dbRes.tarifa);
+          console.log("✅ Dados do Django carregados com sucesso!", dbRes);
+      }
+  } catch (erro) {
+      console.warn("⚠️ Django offline ou sem conexão. Usando dados locais.", erro);
+  }
+
+  // 2. O resto do código original (UMA VEZ SÓ!)
   const res = residencias[0];
   const bal = calcularBalanco(res);
   const proj = preverConsumo(res);
-  const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo/bal.geracao)*100 : 0;
+  const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo / bal.geracao) * 100 : 0;
 
   document.getElementById('dashStats').innerHTML = `
     <div class="stat-card">
@@ -1288,7 +1306,6 @@ async function executarSimulacaoReal() {
   const loading = document.getElementById('simLoading');
   const resultDiv = document.getElementById('simResultado');
   
-  // Pegar inputs
   const cepInput = document.getElementById('simCep').value.trim();
   const qtdPaineis = parseInt(document.getElementById('simQtdPaineis').value) || 10;
   const potPainel = parseFloat(document.getElementById('simPotPainel').value) || 550;
@@ -1305,14 +1322,12 @@ async function executarSimulacaoReal() {
     return;
   }
 
-  // Configurar UI de loading
   btn.disabled = true;
   btn.textContent = 'Buscando dados...';
   loading.style.display = 'block';
   resultDiv.style.display = 'none';
 
   try {
-    // 1. Buscar CEP (ViaCEP)
     const resCep = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
     const dataCep = await resCep.json();
     if (dataCep.erro) throw new Error('CEP não encontrado. Confira os números.');
@@ -1321,27 +1336,23 @@ async function executarSimulacaoReal() {
     const uf = dataCep.uf;
     const nomeEstado = dataCep.estado;
 
-    // 2. Buscar Coordenadas (Open-Meteo Geocoding)
     const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=10&language=pt&format=json`);
     const dataGeo = await resGeo.json();
     if (!dataGeo.results || dataGeo.results.length === 0) throw new Error('Não foi possível obter coordenadas para esta cidade.');
 
-    // Tenta achar a cidade exata no estado
     let local = dataGeo.results.find(r => r.country_code === 'BR' && r.admin1 === nomeEstado && r.name === cidade);
     if (!local) local = dataGeo.results.find(r => r.country_code === 'BR' && r.name === cidade);
-    if (!local) local = dataGeo.results[0]; // Fallback
+    if (!local) local = dataGeo.results[0];
 
     const lat = local.latitude;
     const lon = local.longitude;
 
-    // 3. Buscar Previsão do Tempo (Open-Meteo Forecast)
     const urlForecast = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=global_tilted_irradiance,temperature_2m,cloud_cover&tilt=${inclinacao}&azimuth=${azimute}&forecast_days=16&timezone=auto`;
     const resForecast = await fetch(urlForecast);
     const dataForecast = await resForecast.json();
 
     if (!dataForecast.hourly || !dataForecast.hourly.time) throw new Error('A API não retornou dados horários.');
 
-    // 4. Processar Dados e Calcular Geração (Lógica traduzida do Python)
     const times = dataForecast.hourly.time;
     const irradiancias = dataForecast.hourly.global_tilted_irradiance;
     const temps = dataForecast.hourly.temperature_2m;
@@ -1349,22 +1360,19 @@ async function executarSimulacaoReal() {
     let totalGeracao = 0;
     const geracaoDiaria = {};
     const potenciaKwp = (qtdPaineis * potPainel) / 1000;
-    const noct = 45; // Valor padrão
-    const coefTemp = -0.35; // Valor padrão
+    const noct = 45;
+    const coefTemp = -0.35;
 
     for (let i = 0; i < times.length; i++) {
-      const dt = new Date(times[i]);
       const diaStr = times[i].split('T')[0];
       const irradiancia = Math.max(0, irradiancias[i] || 0);
       const tempAmb = temps[i] || 25;
 
-      // Fórmulas do código Python
       const tempCelula = tempAmb + ((noct - 20) / 800) * irradiancia;
       const fatorTemp = Math.max(0, 1 + (coefTemp / 100) * (tempCelula - 25));
       const potDc = potenciaKwp * (irradiancia / 1000) * fatorTemp;
       let potAc = potDc * eficienciaInversor * (1 - perdasAdicionais / 100);
 
-      // Geração no intervalo de 1h
       const geracaoHora = potAc;
 
       if (!geracaoDiaria[diaStr]) geracaoDiaria[diaStr] = 0;
@@ -1372,7 +1380,6 @@ async function executarSimulacaoReal() {
       totalGeracao += geracaoHora;
     }
 
-    // 5. Resumo
     const diasComDados = Object.keys(geracaoDiaria).length;
     const mediaDiaria = totalGeracao / diasComDados;
     const projecaoMensal = mediaDiaria * 30.4375;
@@ -1380,7 +1387,6 @@ async function executarSimulacaoReal() {
     const valorBruto = consumoCoberto * tarifa;
     const percentualCobertura = consumoMensal > 0 ? (projecaoMensal / consumoMensal) * 100 : 0;
 
-    // Renderizar Resultados
     document.getElementById('simResumoKpis').innerHTML = `
       <div class="stat-card" style="box-shadow:none; padding:10px;">
         <div class="ic" style="background:var(--blue); width:32px; height:32px; font-size:14px;">📍</div>
@@ -1406,8 +1412,7 @@ async function executarSimulacaoReal() {
       <i>Nota: Esta projeção mensal extrapola a média diária da previsão disponível para 30,4 dias. A conta real depende do perfil horário, autoconsumo, regras de compensação e impostos.</i>
     `;
 
-    // Renderizar Gráfico Simples (CSS) dos próximos dias
-    const diasArr = Object.keys(geracaoDiaria).slice(0, 7); // Pega os 7 primeiros dias
+    const diasArr = Object.keys(geracaoDiaria).slice(0, 7);
     const maxGeracao = Math.max(...diasArr.map(d => geracaoDiaria[d]));
     const scale = 150 / maxGeracao;
 
@@ -1415,7 +1420,7 @@ async function executarSimulacaoReal() {
     diasArr.forEach(dia => {
       const val = geracaoDiaria[dia];
       const altura = Math.round(val * scale);
-      const labelDia = dia.split('-').slice(1).reverse().join('/'); // MM/DD -> DD/MM simplificado
+      const labelDia = dia.split('-').slice(1).reverse().join('/');
       htmlBarras += `
         <div class="balance-bar-wrap">
           <div class="balance-bar-group">
@@ -1433,7 +1438,6 @@ async function executarSimulacaoReal() {
     showToast('Erro na simulação: ' + error.message);
     alert('Ocorreu um erro ao calcular: ' + error.message);
   } finally {
-    // Restaurar UI
     btn.disabled = false;
     btn.textContent = '🚀 Calcular Simulação Real';
     loading.style.display = 'none';
