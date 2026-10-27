@@ -1313,9 +1313,7 @@ async function executarSimulacaoReal() {
   const tarifa = parseFloat(document.getElementById('simTarifa').value) || 0.85;
   const inclinacao = parseInt(document.getElementById('simInclinacao').value) || 20;
   const azimute = parseInt(document.getElementById('simAzimute').value) || 180;
-  const eficienciaInversor = (parseFloat(document.getElementById('simEficiencia').value) || 97) / 100;
-  const perdasAdicionais = parseFloat(document.getElementById('simPerdas').value) || 10;
-
+  
   const cepLimpo = cepInput.replace(/\D/g, '');
   if (cepLimpo.length !== 8) {
     showToast('Digite um CEP válido com 8 números.');
@@ -1328,96 +1326,72 @@ async function executarSimulacaoReal() {
   resultDiv.style.display = 'none';
 
   try {
+    // 1. Busca a Cidade pelo CEP
     const resCep = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
     const dataCep = await resCep.json();
-    if (dataCep.erro) throw new Error('CEP não encontrado. Confira os números.');
-
+    if (dataCep.erro) throw new Error('CEP não encontrado.');
     const cidade = dataCep.localidade;
     const uf = dataCep.uf;
     const nomeEstado = dataCep.estado;
 
+    // 2. Busca a Latitude/Longitude (Geocoding)
     const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=10&language=pt&format=json`);
     const dataGeo = await resGeo.json();
-    if (!dataGeo.results || dataGeo.results.length === 0) throw new Error('Não foi possível obter coordenadas para esta cidade.');
-
-    let local = dataGeo.results.find(r => r.country_code === 'BR' && r.admin1 === nomeEstado && r.name === cidade);
-    if (!local) local = dataGeo.results.find(r => r.country_code === 'BR' && r.name === cidade);
-    if (!local) local = dataGeo.results[0];
-
+    if (!dataGeo.results || dataGeo.results.length === 0) throw new Error('Coordenadas não encontradas.');
+    let local = dataGeo.results.find(r => r.country_code === 'BR' && r.admin1 === nomeEstado && r.name === cidade) || dataGeo.results[0];
+    
     const lat = local.latitude;
     const lon = local.longitude;
-
-    const urlForecast = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=global_tilted_irradiance,temperature_2m,cloud_cover&tilt=${inclinacao}&azimuth=${azimute}&forecast_days=16&timezone=auto`;
-    const resForecast = await fetch(urlForecast);
-    const dataForecast = await resForecast.json();
-
-    if (!dataForecast.hourly || !dataForecast.hourly.time) throw new Error('A API não retornou dados horários.');
-
-    const times = dataForecast.hourly.time;
-    const irradiancias = dataForecast.hourly.global_tilted_irradiance;
-    const temps = dataForecast.hourly.temperature_2m;
-
-    let totalGeracao = 0;
-    const geracaoDiaria = {};
     const potenciaKwp = (qtdPaineis * potPainel) / 1000;
-    const noct = 45;
-    const coefTemp = -0.35;
 
-    for (let i = 0; i < times.length; i++) {
-      const diaStr = times[i].split('T')[0];
-      const irradiancia = Math.max(0, irradiancias[i] || 0);
-      const tempAmb = temps[i] || 25;
+    // 3. CHAMA O NOSSO DJANGO (Não chama mais a Open-Meteo direto)
+    const urlDjango = `http://127.0.0.1:8000/api/previsao-solar/?lat=${lat}&lon=${lon}&tilt=${inclinacao}&azimuth=${azimute}&potencia=${potenciaKwp}`;
+    const resDjango = await fetch(urlDjango);
+    const dataDjango = await resDjango.json();
 
-      const tempCelula = tempAmb + ((noct - 20) / 800) * irradiancia;
-      const fatorTemp = Math.max(0, 1 + (coefTemp / 100) * (tempCelula - 25));
-      const potDc = potenciaKwp * (irradiancia / 1000) * fatorTemp;
-      let potAc = potDc * eficienciaInversor * (1 - perdasAdicionais / 100);
+    if (dataDjango.status !== 'sucesso') throw new Error('Erro ao calcular no Django.');
 
-      const geracaoHora = potAc;
-
-      if (!geracaoDiaria[diaStr]) geracaoDiaria[diaStr] = 0;
-      geracaoDiaria[diaStr] += geracaoHora;
-      totalGeracao += geracaoHora;
-    }
-
-    const diasComDados = Object.keys(geracaoDiaria).length;
-    const mediaDiaria = totalGeracao / diasComDados;
+    // 4. Processa os dados devolvidos pelo Django
+    const geracaoDiaria = dataDjango.geracao_diaria_kwh;
+    const diasArr = Object.keys(geracaoDiaria);
+    const totalGeracao = Object.values(geracaoDiaria).reduce((a, b) => a + b, 0);
+    const mediaDiaria = totalGeracao / diasArr.length;
     const projecaoMensal = mediaDiaria * 30.4375;
     const consumoCoberto = Math.min(projecaoMensal, consumoMensal);
     const valorBruto = consumoCoberto * tarifa;
     const percentualCobertura = consumoMensal > 0 ? (projecaoMensal / consumoMensal) * 100 : 0;
 
+    // 5. Renderiza na tela
     document.getElementById('simResumoKpis').innerHTML = `
       <div class="stat-card" style="box-shadow:none; padding:10px;">
         <div class="ic" style="background:var(--blue); width:32px; height:32px; font-size:14px;">📍</div>
-        <div><div class="val" style="font-size:14px;">${cidade}/${uf}</div><div class="lbl">Localização encontrada</div></div>
+        <div><div class="val" style="font-size:14px;">${cidade}/${uf}</div><div class="lbl">Localização</div></div>
       </div>
       <div class="stat-card" style="box-shadow:none; padding:10px;">
         <div class="ic" style="background:var(--orange); width:32px; height:32px; font-size:14px;">⚡</div>
-        <div><div class="val" style="font-size:14px;">${potenciaKwp.toFixed(2)} kWp</div><div class="lbl">Potência Instalada</div></div>
+        <div><div class="val" style="font-size:14px;">${potenciaKwp.toFixed(2)} kWp</div><div class="lbl">Potência</div></div>
       </div>
       <div class="stat-card" style="box-shadow:none; padding:10px;">
         <div class="ic" style="background:var(--green); width:32px; height:32px; font-size:14px;">📈</div>
-        <div><div class="val" style="font-size:14px;">${mediaDiaria.toFixed(1)} kWh</div><div class="lbl">Média Diária Prevista</div></div>
+        <div><div class="val" style="font-size:14px;">${mediaDiaria.toFixed(1)} kWh</div><div class="lbl">Média Diária (Django)</div></div>
       </div>
       <div class="stat-card" style="box-shadow:none; padding:10px;">
         <div class="ic" style="background:var(--purple); width:32px; height:32px; font-size:14px;">💰</div>
-        <div><div class="val" style="font-size:14px;">R$ ${valorBruto.toFixed(2)}</div><div class="lbl">Economia Bruta Estimada</div></div>
+        <div><div class="val" style="font-size:14px;">R$ ${valorBruto.toFixed(2)}</div><div class="lbl">Economia Estimada</div></div>
       </div>
     `;
 
     document.getElementById('simMensagemFinal').innerHTML = `
-      A geração projetada para 1 mês (baseada na previsão de 16 dias) é de <b>${projecaoMensal.toFixed(0)} kWh</b>.<br>
-      Isso equivale a aproximadamente <b>${percentualCobertura.toFixed(1)}%</b> do seu consumo mensal informado (${consumoMensal} kWh).<br><br>
-      <i>Nota: Esta projeção mensal extrapola a média diária da previsão disponível para 30,4 dias. A conta real depende do perfil horário, autoconsumo, regras de compensação e impostos.</i>
+      A geração projetada para 1 mês é de <b>${projecaoMensal.toFixed(0)} kWh</b>.<br>
+      Isso cobre aproximadamente <b>${percentualCobertura.toFixed(1)}%</b> do seu consumo (${consumoMensal} kWh).
     `;
 
-    const diasArr = Object.keys(geracaoDiaria).slice(0, 7);
+    // Gráfico
     const maxGeracao = Math.max(...diasArr.map(d => geracaoDiaria[d]));
     const scale = 150 / maxGeracao;
-
     let htmlBarras = '';
-    diasArr.forEach(dia => {
+    
+    diasArr.slice(0, 7).forEach(dia => {
       const val = geracaoDiaria[dia];
       const altura = Math.round(val * scale);
       const labelDia = dia.split('-').slice(1).reverse().join('/');
@@ -1436,7 +1410,6 @@ async function executarSimulacaoReal() {
   } catch (error) {
     console.error(error);
     showToast('Erro na simulação: ' + error.message);
-    alert('Ocorreu um erro ao calcular: ' + error.message);
   } finally {
     btn.disabled = false;
     btn.textContent = '🚀 Calcular Simulação Real';
