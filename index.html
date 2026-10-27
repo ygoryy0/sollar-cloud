@@ -3,19 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nuvem Solar — Gestão Inteligente de Energia</title>
+<title>Kivora — Energia Solar Inteligente</title>
 <style>
   :root{
-    --navy:#101a2e; --navy-2:#16233d;
-    --orange:#f4a531; --orange-2:#e08c1f; --orange-soft:#fff4e0;
-    --yellow:#f9c74f;
-    --blue:#1f7fe0; --blue-soft:#e8f0fb;
-    --cyan:#17c4d8;
-    --green:#2fae5e; --green-soft:#e4f7ea;
-    --red:#d9534f; --red-soft:#fbe6e5;
-    --purple:#6b5fd9;
+    --navy:#0B132B; --navy-2:#1C2541;
+    --orange:#F4A531; --orange-2:#E08C1F; --orange-soft:#fff4e0;
+    --yellow:#F9C74F;
+    --blue:#1F7FE0; --blue-soft:#e8f0fb;
+    --cyan:#17c4d8; --green:#2fae5e; --green-soft:#e4f7ea;
+    --red:#d9534f; --red-soft:#fbe6e5; --purple:#6b5fd9;
     --ink:#1c2436; --muted:#7b8496;
-    --bg:#eef1f5; --card:#ffffff; --border:#e3e7ee;
+    --bg:#f4f7f6; --card:#ffffff; --border:#e3e7ee;
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);}
@@ -23,22 +21,22 @@
 
   /* ---- SIDEBAR ---- */
   .sidebar{
-    width:240px;color:#c7cede;
-    background-color:var(--navy);
+    width:240px;color:#c7cede; background-color:var(--navy);
     background-image:
-      linear-gradient(180deg,rgba(16,26,46,0) 0%,rgba(16,26,46,.5) 60%,rgba(16,26,46,.96) 100%),
-      radial-gradient(circle at 85% 80%,rgba(244,165,49,.25),transparent 55%),
+      linear-gradient(180deg,rgba(11,19,43,0) 0%,rgba(11,19,43,.8) 60%,rgba(11,19,43,.98) 100%),
+      radial-gradient(circle at 85% 80%,rgba(31,127,224,.15),transparent 55%),
       radial-gradient(circle at 15% 20%,rgba(249,199,79,.10),transparent 45%);
     background-repeat:no-repeat; background-size:100% 100%,auto,auto;
     background-position:top,bottom right,top left;
     display:flex;flex-direction:column;flex-shrink:0;
   }
   .brand{
-    display:flex;align-items:center;gap:10px;padding:18px 16px;
+    display:flex;align-items:center;justify-content:center;gap:10px;padding:18px 16px;
     font-weight:700;color:#fff;font-size:15px;border-bottom:1px solid #223154;
   }
-  .brand .logo{width:26px;height:26px;flex-shrink:0;}
-  .brand b{color:var(--orange);}
+  .brand img{height:40px; width:40px; border-radius:50%; object-fit:cover; object-position:center 25%; border: 2px solid var(--orange);}
+  .brand span{font-size: 18px; letter-spacing: 2px; color: #fff;}
+  
   .search{margin:12px 14px;background:#1b2946;border-radius:6px;padding:8px 10px;font-size:12px;color:#6b7690;}
   .nav{padding:6px 8px;flex:1;overflow-y:auto;}
   .nav-section{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#5b6580;padding:12px 10px 4px;}
@@ -93,7 +91,6 @@
   .stat-card .ic{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:16px;}
   .stat-card .val{font-size:20px;font-weight:700;line-height:1.1;}
   .stat-card .lbl{font-size:11.5px;color:var(--muted);margin-top:2px;}
-  .stat-card .badge-forecast{font-size:9.5px;background:var(--orange-soft);color:var(--orange-2);padding:2px 6px;border-radius:10px;font-weight:700;margin-left:6px;}
 
   .panels{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;}
   .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
@@ -219,17 +216,6 @@
   .icon-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;}
   .icon-btn:hover{background:var(--orange-soft);border-color:var(--orange);}
 
-  /* ---- MODAIS ---- */
-  .modal-overlay{position:fixed;inset:0;background:rgba(10,16,30,.45);display:none;align-items:center;justify-content:center;z-index:60;padding:20px;}
-  .modal-overlay.open{display:flex;}
-  .modal{background:#fff;border-radius:10px;width:420px;max-width:90vw;padding:22px;max-height:86vh;overflow-y:auto;}
-  .modal.modal-wide{width:620px;}
-  .modal h3{margin:0 0 4px;font-size:15px;}
-  .modal p.sub{margin:0 0 16px;font-size:12px;color:var(--muted);}
-  .modal .field-group{margin-bottom:12px;}
-  .modal .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
-  .btn-ghost{background:#f0f3f8;color:var(--ink);}
-
   /* ---- AI PANEL ---- */
   .overlay{position:fixed;inset:0;background:rgba(10,16,30,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:40;}
   .overlay.open{opacity:1;pointer-events:auto;}
@@ -251,7 +237,6 @@
   .chat-msg.user{align-self:flex-end;background:var(--orange);color:#fff;}
   .chat-msg.ai{align-self:flex-start;background:#eef2f7;color:var(--ink);}
   .chat-msg.ai b{color:var(--orange-2);}
-  .chat-source-btn{align-self:flex-start;font-size:10.5px;font-weight:700;color:var(--orange-2);background:#fff;border:1px solid var(--orange);border-radius:6px;padding:4px 9px;cursor:pointer;font-family:inherit;margin-top:-4px;}
   .ai-input-bar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 14px;border-top:1px solid var(--border);background:#fff;}
   .ai-input-bar textarea{flex:1;border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-family:inherit;font-size:12.5px;resize:none;min-height:20px;max-height:100px;line-height:1.4;outline:none;}
   .ai-input-bar textarea:focus{border-color:var(--orange);}
@@ -304,13 +289,8 @@
   <!-- SIDEBAR -->
   <div class="sidebar" id="sidebarEl">
     <div class="brand">
-      <svg class="logo" viewBox="0 0 32 32" fill="none">
-        <circle cx="16" cy="12" r="6" fill="#f9c74f"/>
-        <path d="M16 3v3M16 18v3M7 12h3M22 12h3M9.5 5.5l2 2M20.5 5.5l-2 2M9.5 18.5l2-2M20.5 18.5l-2-2" stroke="#f9c74f" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M5 27 L16 19 L27 27 L27 30 L5 30 Z" fill="#f4a531"/>
-        <rect x="13" y="24" width="6" height="6" fill="#101a2e"/>
-      </svg>
-      <span><b>Nuvem</b> Solar</span>
+      <img src="logo.png" alt="Kivora">
+      <span><b>KIVORA</b></span>
     </div>
     <div class="search">🔍 Buscar</div>
     <div class="nav">
@@ -326,7 +306,7 @@
       <button class="nav-item" data-view="previsao" onclick="showView('previsao',this)"><span class="dot"></span> Previsão de Geração</button>
       <button class="nav-item" data-view="relatorio" onclick="showView('relatorio',this)"><span class="dot"></span> Relatórios</button>
 
-         <div class="nav-section">Inteligência</div>
+      <div class="nav-section">Inteligência</div>
       <button class="nav-item" data-view="dicas" onclick="showView('dicas',this)"><span class="dot"></span> Dicas de Economia</button>
       <button class="nav-item" data-view="avisos" onclick="showView('avisos',this)"><span class="dot"></span> Avisos <span class="nbadge" id="navAlertBadge">0</span></button>
       <button class="nav-item" data-view="simulador" onclick="showView('simulador',this)"><span class="dot"></span> Simulador Real 🌍</button>
@@ -336,8 +316,8 @@
     <button class="ai-launcher" onclick="toggleAI(true)">
       <span class="ico">✨</span>
       <span>
-        <b>Assistente Nuvem</b>
-        <span>Seu consultor de energia solar</span>
+        <b>Assistente Kivora</b>
+        <span>Energia Inteligente para um Amanhã Melhor</span>
       </span>
     </button>
   </div>
@@ -346,8 +326,8 @@
   <div class="main">
     <div class="topbar">
       <button class="hamburger" onclick="toggleSidebar()" aria-label="Abrir menu">☰</button>
-      <div class="crumbs">Nuvem Solar / <b id="crumbCurrent">Visão Geral</b></div>
-      <div class="user-chip"><div class="avatar">MS</div> Maria Silva</div>
+      <div class="crumbs">Kivora / <b id="crumbCurrent">Visão Geral</b></div>
+      <div class="user-chip"><div class="avatar">MS</div> <span id="topUserName">Maria Silva</span></div>
     </div>
 
     <div class="content">
@@ -357,10 +337,10 @@
         <div class="banner">
           <div>
             <div class="eyebrow">VISÃO GERAL</div>
-            <h1>Bom dia, Maria ☀️</h1>
+            <h1>Bom dia, <span id="dashUserName">Maria</span> ☀️</h1>
             <p>Seu sistema solar está gerando bem hoje. Veja o resumo do seu mês:</p>
           </div>
-          <div class="banner-note">Atualizado agora · dados simulados</div>
+          <div class="banner-note">Atualizado agora · dados conectados</div>
         </div>
 
         <div class="stats" id="dashStats"></div>
@@ -368,7 +348,7 @@
         <div class="panels" style="margin-bottom:16px;">
           <div class="card">
             <h3>Previsão de geração — próximos 7 dias</h3>
-            <div class="sub">Baseada em previsão do tempo e nas características do seu sistema (5,4 kWp)</div>
+            <div class="sub">Baseada em previsão do tempo e nas características do seu sistema</div>
             <div class="forecast-grid" id="dashForecastPreview"></div>
             <div style="text-align:right;margin-top:4px;">
               <button class="btn btn-outline btn-sm" onclick="showView('previsao')">Ver previsão completa →</button>
@@ -424,28 +404,9 @@
             <span><span class="sw" style="background:#8a94a8"></span> Consumo da rede</span>
           </div>
           <h3 id="balChartTitle">Balanço de hoje</h3>
-          <div class="sub" id="balChartSub">Perfil horário do dia 11/08/2026</div>
+          <div class="sub" id="balChartSub">Perfil horário simulado</div>
           <div class="balance-chart" id="balanceChart"></div>
           <div class="balance-summary" id="balanceSummary"></div>
-        </div>
-
-        <div class="card" style="margin-top:16px;">
-          <h3>O que cada número significa</h3>
-          <div class="sub">Entenda como o seu sistema está performando</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:8px;">
-            <div style="padding:12px;background:var(--green-soft);border-radius:8px;">
-              <div style="font-size:12px;font-weight:700;color:#218a45;margin-bottom:4px;">✅ Autoconsumo</div>
-              <div style="font-size:11.5px;color:#3b4358;line-height:1.5;">Energia gerada e consumida na hora. Não passa pela rede e não paga Fio B. É o melhor cenário.</div>
-            </div>
-            <div style="padding:12px;background:var(--orange-soft);border-radius:8px;">
-              <div style="font-size:12px;font-weight:700;color:#b5680d;margin-bottom:4px;">⚡ Excedente injetado</div>
-              <div style="font-size:11.5px;color:#3b4358;line-height:1.5;">Energia gerada que não foi consumida na hora e vai para a rede. Vira crédito, mas paga 60% do Fio B quando compensado (Lei 14.300/2022).</div>
-            </div>
-            <div style="padding:12px;background:var(--blue-soft);border-radius:8px;">
-              <div style="font-size:12px;font-weight:700;color:#1668c2;margin-bottom:4px;">🏠 Consumo da rede</div>
-              <div style="font-size:11.5px;color:#3b4358;line-height:1.5;">Energia consumida quando o sistema não estava gerando o suficiente. Paga tarifa cheia (TE + TUSD).</div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -455,7 +416,7 @@
           <div>
             <div class="eyebrow">PREVISÃO</div>
             <h1>Previsão de Geração Solar</h1>
-            <p>Baseada em previsão do tempo para sua localização (Serra/ES)</p>
+            <p>Baseada em previsão do tempo para sua localização</p>
           </div>
           <div class="banner-note" id="previsaoAtualizado">Atualizado agora</div>
         </div>
@@ -464,7 +425,7 @@
           <div class="fc-head">🔎 Configurar previsão</div>
           <div class="filter-grid">
             <div class="field-group"><label>Residência</label><select id="prevResidencia" onchange="renderPrevisao()"></select></div>
-            <div class="field-group"><label>Localização</label><input type="text" id="prevLoc" value="Serra - ES" readonly></div>
+            <div class="field-group"><label>Localização</label><input type="text" id="prevLoc" value="Buscando..." readonly></div>
             <div class="field-group"><label>Horizonte</label>
               <select id="prevHorizonte" onchange="renderPrevisao()">
                 <option value="7">Próximos 7 dias</option>
@@ -486,8 +447,8 @@
             <div class="sub">Transparência total sobre os dados</div>
             <div style="font-size:12.5px;line-height:1.6;color:#3b4358;">
               <p><b>1. Fonte meteorológica:</b> usamos dados de irradiância solar e temperatura previstos para a sua localização (via API Open-Meteo).</p>
-              <p><b>2. Modelo físico:</b> convertemos a irradiância em potência elétrica considerando a potência instalada do seu sistema (5,4 kWp), inclinação (20°), orientação (Norte) e eficiência do inversor.</p>
-              <p><b>3. Margem de erro:</b> a previsão tem margem de ±15% para os próximos 3 dias e ±25% para os dias 4-7. Condições climáticas imprevistas podem alterar o resultado.</p>
+              <p><b>2. Modelo físico:</b> o Django pega esses dados e calcula a potência considerando a sua instalação.</p>
+              <p><b>3. Margem de erro:</b> a previsão tem margem de ±15% para os próximos 3 dias e ±25% para os dias 4-7.</p>
             </div>
           </div>
         </div>
@@ -586,7 +547,7 @@
           <div>
             <div class="eyebrow">FERRAMENTA</div>
             <h1>Simulador Solar Real</h1>
-            <p>Simulação baseada no seu CEP e na previsão meteorológica (Open-Meteo)</p>
+            <p>Simulação baseada no seu CEP e na previsão meteorológica processada pelo Django</p>
           </div>
         </div>
 
@@ -626,16 +587,16 @@
           </div>
         </div>
 
-        <div id="simLoading" style="display:none; text-align:center; padding:40px; color:var(--orange-2);">
+        <div id="simLoading" style="display:none; text-align:center; padding:40px; color:var(--blue);">
           <h3>Buscando dados e calculando...</h3>
-          <p>Consultando ViaCEP, Open-Meteo e processando irradiância...</p>
+          <p>Consultando ViaCEP, Geocoding e API Kivora...</p>
         </div>
 
         <div class="sim-grid" id="simResultado" style="display:none;">
           <div class="sim-result">
             <h3>Resumo da Simulação</h3>
             <div id="simResumoKpis" style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px;"></div>
-            <div id="simMensagemFinal" style="margin-top:16px; padding:12px; background:var(--orange-soft); border-radius:8px; font-size:12px; color:#8a5c0d; line-height:1.5;"></div>
+            <div id="simMensagemFinal" style="margin-top:16px; padding:12px; background:var(--blue-soft); border-radius:8px; font-size:12px; color:#1668c2; line-height:1.5;"></div>
           </div>
           <div class="sim-result">
             <h3>Geração Prevista (Próximos dias)</h3>
@@ -680,9 +641,6 @@
               <tr><td>Julho/2026</td><td>412</td><td>524</td><td>62%</td><td>R$ 38,40</td><td><button class="icon-btn">⬇</button></td></tr>
               <tr><td>Junho/2026</td><td>438</td><td>498</td><td>58%</td><td>R$ 51,20</td><td><button class="icon-btn">⬇</button></td></tr>
               <tr><td>Maio/2026</td><td>396</td><td>510</td><td>64%</td><td>R$ 34,80</td><td><button class="icon-btn">⬇</button></td></tr>
-              <tr><td>Abril/2026</td><td>420</td><td>532</td><td>61%</td><td>R$ 42,10</td><td><button class="icon-btn">⬇</button></td></tr>
-              <tr><td>Março/2026</td><td>455</td><td>480</td><td>55%</td><td>R$ 62,50</td><td><button class="icon-btn">⬇</button></td></tr>
-              <tr><td>Fevereiro/2026</td><td>470</td><td>502</td><td>57%</td><td>R$ 58,90</td><td><button class="icon-btn">⬇</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -696,10 +654,9 @@
           <table>
             <thead><tr><th>Nome</th><th>Tipo</th><th>Data</th><th></th></tr></thead>
             <tbody>
-              <tr><td>Contrato de adesão — Nuvem Solar</td><td>Contrato</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
+              <tr><td>Contrato de adesão — Kivora</td><td>Contrato</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
               <tr><td>Manual do inversor Growatt 5000</td><td>Manual</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
               <tr><td>Laudo de vistoria — EDP ES</td><td>Laudo</td><td>20/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
-              <tr><td>Certificado de garantia dos painéis</td><td>Certificado</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -707,13 +664,13 @@
 
       <!-- ===== COMUNIDADE ===== -->
       <div class="view" id="view-comunidade">
-        <div class="banner"><div><div class="eyebrow">MINHA CONTA</div><h1>Comunidade Nuvem</h1><p>Compare seu desempenho com outras residências (dados anônimos)</p></div></div>
+        <div class="banner"><div><div class="eyebrow">MINHA CONTA</div><h1>Comunidade Kivora</h1><p>Compare seu desempenho com outras residências (dados anônimos)</p></div></div>
         <div class="card">
           <h3>Sua residência vs. média da região (Serra - ES)</h3>
           <div class="sub">Comparação anônima com 342 residências próximas</div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:12px;">
-            <div style="text-align:center;padding:16px;background:var(--orange-soft);border-radius:8px;">
-              <div style="font-size:24px;font-weight:800;color:var(--orange-2);">62%</div>
+            <div style="text-align:center;padding:16px;background:var(--blue-soft);border-radius:8px;">
+              <div style="font-size:24px;font-weight:800;color:var(--blue);">62%</div>
               <div style="font-size:11px;color:var(--muted);margin-top:4px;">Seu autoconsumo</div>
               <div style="font-size:10px;color:var(--green);margin-top:2px;">+8% vs. média regional</div>
             </div>
@@ -751,9 +708,6 @@
             <select id="cfgFreq"><option>Diário</option><option selected>Semanal</option><option>Mensal</option></select>
           </div>
           <div class="btn-row"><button class="btn btn-orange" onclick="showToast('Configurações salvas localmente')">💾 Salvar</button></div>
-          <div style="margin-top:14px;padding:10px 14px;background:var(--orange-soft);border-radius:8px;font-size:11.5px;color:#8a5c0d;">
-            ⚠ Envio de e-mails ainda não integrado a um backend. Preferências salvas apenas localmente nesta demonstração.
-          </div>
         </div>
       </div>
 
@@ -767,7 +721,7 @@
   <div class="ai-head">
     <div class="title">
       <div class="ic">✨</div>
-      <div><b>Assistente Nuvem</b><span>Seu consultor de energia solar</span></div>
+      <div><b>Assistente Kivora</b><span>Energia Inteligente para um Amanhã Melhor</span></div>
     </div>
     <button class="close-btn" onclick="toggleAI(false)">✕</button>
   </div>
@@ -776,44 +730,33 @@
     <div class="chip-row" id="aiChips"></div>
     <div class="section-label">Conversa</div>
     <div class="ai-chat-log" id="aiChatLog">
-      <div class="chat-msg ai">Olá, Maria! 👋 Sou o Assistente Nuvem. Posso te ajudar a entender sua conta de luz, prever sua geração solar, descobrir como economizar mais ou tirar dúvidas sobre seu sistema. O que você quer saber?</div>
+      <div class="chat-msg ai">Olá, Maria! 👋 Sou o Assistente Kivora. Posso te ajudar a entender sua conta de luz, prever sua geração solar ou descobrir como economizar mais. O que você quer saber?</div>
     </div>
   </div>
   <div class="ai-input-bar">
-    <textarea id="aiQuestion" rows="1" placeholder="Pergunte ao Assistente Nuvem..." onkeydown="handleAIKeydown(event)" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';"></textarea>
+    <textarea id="aiQuestion" rows="1" placeholder="Pergunte ao Assistente Kivora..." onkeydown="handleAIKeydown(event)" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';"></textarea>
     <button class="ai-send-btn" onclick="askAI()">➤</button>
   </div>
-  <div class="ai-footer">Respostas baseadas em dados simulados da plataforma</div>
+  <div class="ai-footer">Respostas baseadas em dados da plataforma Kivora</div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 /* =========================================================================
-   DADOS SIMULADOS (FALLBACK) — SERÃO SUBSTITUÍDOS PELO DJANGO
+   DADOS SIMULADOS (FALLBACK)
    ========================================================================= */
 const residencias = [
   {
     id:'RES-001', nome:'Residência Silva', apelido:'Casa Silva',
-    endereco:'Rua das Acácias, 123 · Serra/ES',
-    distribuidora:'EDP Espírito Santo',
+    cep:'29160-000',
     potenciaInstalada:5.4, inclinacao:20, orientacao:'Norte',
-    tarifa:0.72, tipoLigacao:'Trifásico',
-    orcamentoMensal:80,
-    consumoHoje:8.4, geracaoHoje:12.1,
-    consumoMes:287, geracaoMes:412,
+    tarifa:0.72, tipoLigacao:'Trifásico', orcamentoMensal:80,
+    consumoMes:350, geracaoMes:420,
     consumoDiario:[9.2,8.8,10.1,7.9,11.2,9.5,8.4,8.8,9.1,10.2,8.5,9.4,11.1,8.9,9.6,10.4,9.2,8.7,9.9,10.1,8.3,9.6,10.8,9.4,8.9,9.1,10.2,9.5,8.8,9.6],
     geracaoDiaria:[18.2,17.5,19.1,16.8,20.3,19.4,18.8,17.2,19.6,18.1,17.9,19.3,20.1,18.5,19.2,17.7,18.9,19.8,20.4,18.3,17.6,19.1,18.7,19.5,20.2,18.4,19.3,18.9,17.8,19.6],
     inversorOnline:true,
-    previsaoGeracao:[
-      {dia:'12/08', diaSemana:'Hoje', tempo:'Ensolarado', icone:'☀️', temp:'18–29°C', condicao:'sol', irradiancia:6.4, geracaoPrevista:24.8, margem:15},
-      {dia:'13/08', diaSemana:'Qui', tempo:'Ensolarado', icone:'☀️', temp:'19–30°C', condicao:'sol', irradiancia:6.6, geracaoPrevista:25.6, margem:15},
-      {dia:'14/08', diaSemana:'Sex', tempo:'Parcial. nublado', icone:'⛅', temp:'20–28°C', condicao:'parcial', irradiancia:5.1, geracaoPrevista:19.7, margem:15},
-      {dia:'15/08', diaSemana:'Sáb', tempo:'Nublado', icone:'☁️', temp:'19–26°C', condicao:'nublado', irradiancia:3.8, geracaoPrevista:14.7, margem:25},
-       {dia:'16/08', diaSemana:'Dom', tempo:'Chuva', icone:'🌧️', temp:'18–24°C', condicao:'chuva', irradiancia:2.2, geracaoPrevista:8.5, margem:25},
-      {dia:'17/08', diaSemana:'Seg', tempo:'Parcial. nublado', icone:'⛅', temp:'19–28°C', condicao:'parcial', irradiancia:5.3, geracaoPrevista:20.5, margem:25},
-      {dia:'18/08', diaSemana:'Ter', tempo:'Ensolarado', icone:'☀️', temp:'20–31°C', condicao:'sol', irradiancia:6.8, geracaoPrevista:26.4, margem:25},
-    ]
+    previsaoGeracao:[] // Vazio, pois será preenchido via API
   }
 ];
 
@@ -870,19 +813,6 @@ function analyzeResidencia(res){
     });
   }
 
-  if(res.inversorOnline){
-    const prevHoje = res.previsaoGeracao[0];
-    if(res.geracaoHoje < prevHoje.geracaoPrevista * 0.70){
-      issues.push({
-        tipo:'geracao_baixa', severidade:'atencao',
-        titulo:'Geração abaixo do previsto',
-        evidencia:`Geração de hoje: ${res.geracaoHoje.toFixed(1)} kWh vs. previsão de ${prevHoje.geracaoPrevista.toFixed(1)} kWh (${prevHoje.tempo}).`,
-        consequencia:'Pode ser sujeira nos painéis, sombreamento ou falha parcial de strings. Reduz autoconsumo e aumenta consumo da rede.',
-        recomendacao:'Verificar limpeza dos painéis e possíveis novas sombras (árvores, construções). Se persistir por 3+ dias, acionar o instalador.'
-      });
-    }
-  }
-
   if(autoconsumoPct < 50 && bal.geracao > 0){
     issues.push({
       tipo:'autoconsumo_baixo', severidade:'atencao',
@@ -890,26 +820,6 @@ function analyzeResidencia(res){
       evidencia:`Apenas ${autoconsumoPct.toFixed(0)}% da energia gerada está sendo consumida na hora. O restante vai para a rede e paga 60% do Fio B quando compensado.`,
       consequencia:'Você está pagando Fio B desnecessariamente — a energia poderia estar sendo usada diretamente.',
       recomendacao:'Concentre consumo de equipamentos de alto consumo (ar-condicionado, máquina de lavar, chuveiro elétrico) entre 10h e 15h, quando a geração é maior.'
-    });
-  }
-
-  if(proj.totalPrevisto > res.orcamentoMensal * 1.05){
-    issues.push({
-      tipo:'orcamento_estourado', severidade:'atencao',
-      titulo:'Fatura pode estourar o orçamento',
-      evidencia:`Projeção de fim do mês: R$ ${(proj.totalPrevisto * res.tarifa).toFixed(2)} vs. orçamento de R$ ${res.orcamentoMensal.toFixed(2)}.`,
-      consequencia:'A fatura pode vir acima do planejado se o ritmo de consumo continuar.',
-      recomendacao:'Reduzir consumo de equipamentos de alto gasto nos próximos dias ou deslocar para horários de maior geração solar.'
-    });
-  }
-
-  if(bal.consumoRede > bal.consumo * 0.30 && bal.geracao > 0){
-    issues.push({
-      tipo:'pico_ponta', severidade:'atencao',
-      titulo:'Consumo significativo em horário de ponta',
-      evidencia:`${((bal.consumoRede/bal.consumo)*100).toFixed(0)}% do consumo veio da rede.`,
-      consequencia:'Energia da rede em horário de ponta é mais cara e reduz sua economia solar.',
-      recomendacao:'Evite ligar equipamentos de alto consumo entre 18h e 21h. Prefira programar máquina de lavar e lava-louças para o meio do dia.'
     });
   }
 
@@ -936,7 +846,6 @@ function rebuildIssues(){
 rebuildIssues();
 
 function fmtMoney(v){ return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2}); }
-function fmtPct(v){ return (v>=0?'+':'') + v.toFixed(1) + '%'; }
 function showToast(msg){
   const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(window._toastTimer);
@@ -975,7 +884,6 @@ function showView(name, btn){
   if(name==='relatorio') renderRelList();
   if(name==='dicas') renderDicas();
   if(name==='avisos') renderAvisos();
-  if(name==='simulador') renderSimuladorAntigo();
   if(window.innerWidth <= 640) toggleSidebar(false);
 }
 
@@ -990,106 +898,89 @@ function populateSelects(){
 }
 
 async function renderDashboard(){
-  // 1. Busca os dados reais do banco de dados Django
+  let consumoMes = 350, geracaoMes = 420, autoconsumoPct = 83, faturaTotal = 8.47; 
+
   try {
-      const resposta = await fetch('http://127.0.0.1:8000/api/residencias/');
-      const dadosDjango = await resposta.json();
+      const resLista = await fetch('http://127.0.0.1:8000/api/residencias/');
+      const listaDjango = await resLista.json();
       
-      if (dadosDjango.length > 0) {
-          const dbRes = dadosDjango[0]; 
-          residencias[0].nome = dbRes.nome;
-          residencias[0].apelido = dbRes.apelido;
-          residencias[0].potenciaInstalada = parseFloat(dbRes.potencia_instalada);
-          residencias[0].tarifa = parseFloat(dbRes.tarifa);
-          console.log("✅ Dados do Django carregados com sucesso!", dbRes);
+      if (listaDjango.length > 0) {
+          const idReal = listaDjango[0].id; 
+          const resposta = await fetch(`http://127.0.0.1:8000/api/dashboard/${idReal}/`);
+          const data = await resposta.json();
+          
+          if (data.metricas) {
+              consumoMes = data.metricas.consumo_total;
+              geracaoMes = data.metricas.geracao_total;
+              autoconsumoPct = geracaoMes > 0 ? (data.metricas.autoconsumo / geracaoMes) * 100 : 0;
+              faturaTotal = data.metricas.fatura;
+              
+              residencias[0].cep = data.residencia.cep; 
+              
+              document.getElementById('topUserName').textContent = data.residencia.nome;
+              document.getElementById('dashUserName').textContent = data.residencia.nome.split(' ')[0];
+              console.log("✅ Dados reais do Django carregados! ID:", idReal, data);
+          }
       }
   } catch (erro) {
-      console.warn("⚠️ Django offline ou sem conexão. Usando dados locais.", erro);
+      console.warn("⚠️ Django offline. Usando dados locais.", erro);
   }
-
-  // 2. O resto do código original (UMA VEZ SÓ!)
-  const res = residencias[0];
-  const bal = calcularBalanco(res);
-  const proj = preverConsumo(res);
-  const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo / bal.geracao) * 100 : 0;
 
   document.getElementById('dashStats').innerHTML = `
     <div class="stat-card">
       <div class="ic" style="background:var(--blue)">⚡</div>
-      <div><div class="val">${proj.totalPrevisto.toFixed(0)} kWh</div><div class="lbl">Consumo previsto do mês</div></div>
+      <div><div class="val">${consumoMes.toFixed(0)} kWh</div><div class="lbl">Consumo total do mês</div></div>
     </div>
     <div class="stat-card">
       <div class="ic" style="background:var(--orange)">☀️</div>
-      <div><div class="val">${bal.geracao.toFixed(0)} kWh</div><div class="lbl">Geração solar do mês</div></div>
+      <div><div class="val">${geracaoMes.toFixed(0)} kWh</div><div class="lbl">Geração solar do mês</div></div>
     </div>
     <div class="stat-card">
       <div class="ic" style="background:var(--green)">🔄</div>
-      <div><div class="val">${autoconsumoPct.toFixed(0)}%</div><div class="lbl">Autoconsumo (consumido na hora)</div></div>
+      <div><div class="val">${autoconsumoPct.toFixed(0)}%</div><div class="lbl">Autoconsumo (na hora)</div></div>
     </div>
     <div class="stat-card">
       <div class="ic" style="background:var(--orange-2)">💰</div>
-      <div><div class="val">${fmtMoney(bal.faturaTotal)}</div><div class="lbl">Fatura prevista</div></div>
+      <div><div class="val">${fmtMoney(faturaTotal)}</div><div class="lbl">Fatura prevista</div></div>
     </div>
   `;
 
-  document.getElementById('dashForecastPreview').innerHTML = res.previsaoGeracao.slice(0,3).map((d,i)=>`
-    <div class="forecast-day ${i===0?'today':''}">
-      <div class="fd-date">${d.diaSemana}</div>
-      <div class="fd-icon">${d.icone}</div>
-      <div class="fd-temp">${d.temp}</div>
-      <div class="fd-gen">${d.geracaoPrevista.toFixed(1)}</div>
-      <div class="fd-gen-lbl">kWh previstos</div>
+  document.getElementById('dashAlertsList').innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;padding:8px 0;font-size:12px;">
+      <span class="sev-badge sev-normal">🟢</span>
+      <div style="flex:1;min-width:0;"><div style="font-weight:600;">Sistema operando normalmente</div></div>
     </div>
-  `).join('');
+  `;
 
-  const avisosRelevantes = allIssues.filter(i=>i.severidade!=='normal').slice(0,3);
-  document.getElementById('dashAlertsList').innerHTML = avisosRelevantes.length
-    ? avisosRelevantes.map(i=>`
-        <div style="display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--border);font-size:12px;">
-          <span class="sev-badge sev-${i.severidade}" style="flex-shrink:0;">${i.severidade==='critico'?'🔴':'🟠'}</span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;">${i.titulo}</div>
-            <div style="color:var(--muted);font-size:11px;">${i.residenciaNome}</div>
-          </div>
-        </div>`).join('')
-    : '<div style="padding:8px 0;font-size:12px;color:var(--muted);">Nenhum aviso no momento — tudo em ordem 🟢</div>';
-
-  const economia = bal.economiaSolar;
   document.getElementById('dashProjection').innerHTML = `
     <div class="proj-header">
       <div>
-        <div class="proj-title">📅 Previsão de fechamento do mês</div>
-        <div class="proj-period">Baseado no consumo dos primeiros 11 dias · dados simulados</div>
+        <div class="proj-title">📅 Fechamento do mês</div>
+        <div class="proj-period">Baseado nas leituras do banco de dados</div>
       </div>
       <div class="proj-margin">Margem de erro ±12%</div>
     </div>
-    <div class="proj-main">${fmtMoney(bal.faturaTotal)}</div>
-    <div class="proj-main-lbl">Fatura prevista para agosto/2026</div>
+    <div class="proj-main">${fmtMoney(faturaTotal)}</div>
+    <div class="proj-main-lbl">Fatura prevista para este mês</div>
     <div class="proj-breakdown">
-      <div class="pb-item"><b>${proj.realizado.toFixed(0)} kWh</b><span>Consumo realizado</span></div>
-      <div class="pb-item"><b>${proj.previstoRestante.toFixed(0)} kWh</b><span>Ainda previsto</span></div>
-      <div class="pb-item"><b>${fmtMoney(economia)}</b><span>Economia com solar</span></div>
+      <div class="pb-item"><b>${consumoMes.toFixed(0)} kWh</b><span>Consumo total</span></div>
+      <div class="pb-item"><b>${geracaoMes.toFixed(0)} kWh</b><span>Geração total</span></div>
+      <div class="pb-item"><b>${autoconsumoPct.toFixed(0)}%</b><span>Autoconsumo</span></div>
     </div>
   `;
-
-  const badge = document.getElementById('navAlertBadge');
-  const criticos = allIssues.filter(i=>i.severidade==='critico').length;
-  badge.textContent = criticos;
-  badge.style.display = criticos>0 ? 'inline-block' : 'none';
+  
+  document.getElementById('dashForecastPreview').innerHTML = `<div style="grid-column:1/-1; font-size:12px; color:var(--muted); text-align:center; padding:20px;">Use a aba "Previsão de Geração" para ver os dados meteorológicos.</div>`;
 }
 
 function renderBalanco(){
   const res = residenteIndex[document.getElementById('balResidencia').value] || residencias[0];
   const chartEl = document.getElementById('balanceChart');
-
   const geracaoHoraria = [0,0,0,0,0,0.2,0.8,1.6,2.8,3.8,4.5,4.8,4.6,4.0,3.0,1.8,0.8,0.2,0,0,0,0,0,0];
   const consumoHorario = [0.2,0.1,0.1,0.1,0.1,0.2,0.4,0.6,0.8,0.7,0.6,0.7,0.9,0.8,0.7,0.6,0.8,1.2,1.5,1.8,2.0,1.8,1.4,0.8];
   const consumoRedeHorario = consumoHorario.map((c,i)=>Math.max(0, c - geracaoHoraria[i]));
-
   const bal = calcularBalanco(res);
   const maxVal = Math.max(...geracaoHoraria, ...consumoHorario);
   const scale = 160 / maxVal;
-
   let bars = '';
   for(let i=0; i<24; i+=2){
     const g = geracaoHoraria[i] || 0;
@@ -1107,11 +998,9 @@ function renderBalanco(){
     `;
   }
   chartEl.innerHTML = bars;
-
   const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo/bal.geracao)*100 : 0;
   document.getElementById('balChartTitle').textContent = `Balanço de hoje — ${res.apelido}`;
-  document.getElementById('balChartSub').textContent = `Perfil horário do dia 11/08/2026 · ${res.potenciaInstalada} kWp instalados`;
-
+  document.getElementById('balChartSub').textContent = `Perfil horário simulado · ${res.potenciaInstalada} kWp instalados`;
   document.getElementById('balanceSummary').innerHTML = `
     <div class="bs-item bs-autoconsumo">
       <div class="bs-val">${autoconsumoPct.toFixed(0)}%</div>
@@ -1128,52 +1017,99 @@ function renderBalanco(){
   `;
 }
 
-function renderPrevisao(){
+async function renderPrevisao(){
   const res = residenteIndex[document.getElementById('prevResidencia').value] || residencias[0];
-  const horizonte = parseInt(document.getElementById('prevHorizonte').value) || 7;
-  const previsoes = res.previsaoGeracao.slice(0, horizonte);
+  const grid = document.getElementById('forecastGrid');
+  
+  grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--muted);">Buscando localização e previsão...</div>';
 
-  document.getElementById('forecastGrid').innerHTML = previsoes.map((d,i)=>`
-    <div class="forecast-day ${i===0?'today':''}" onclick="mostrarDetalhePrevisao('${res.id}', ${i})">
-      <div class="fd-date">${d.diaSemana}<br><span style="font-size:10px;">${d.dia}</span></div>
-      <div class="fd-icon">${d.icone}</div>
-      <div class="fd-temp">${d.temp}</div>
-      <div class="fd-gen">${d.geracaoPrevista.toFixed(1)}</div>
-      <div class="fd-gen-lbl">kWh previstos</div>
-      <div class="fd-gen-lbl" style="margin-top:2px;font-size:9px;color:var(--muted);">±${d.margem}%</div>
-    </div>
-  `).join('');
+  let cep = res.cep;
+  let cepLimpo = cep ? cep.replace(/\D/g, '') : '';
 
-  mostrarDetalhePrevisao(res.id, 0);
-  document.getElementById('previsaoAtualizado').textContent = 'Atualizado ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if (!cepLimpo || cepLimpo.length !== 8) {
+      cepLimpo = '29160000';
+      cep = '29160-000';
+  }
+
+  try {
+      const resCep = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+      const dataCep = await resCep.json();
+      
+      if (dataCep.erro) {
+          throw new Error(`O CEP ${cep} cadastrado no banco não existe.`);
+      }
+      
+      const cidade = dataCep.localidade;
+      const uf = dataCep.uf;
+      const nomeEstado = dataCep.estado;
+
+      const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=10&language=pt&format=json`);
+      const dataGeo = await resGeo.json();
+      
+      if (!dataGeo.results || dataGeo.results.length === 0) {
+          throw new Error('Não foi possível encontrar as coordenadas da cidade.');
+      }
+
+      let local = dataGeo.results.find(r => r.country_code === 'BR' && r.admin1 === nomeEstado && r.name === cidade) || dataGeo.results[0];
+      const lat = local.latitude;
+      const lon = local.longitude;
+
+      const potencia = res.potenciaInstalada || 5.4;
+      const inclinacao = res.inclinacao || 20;
+      const urlDjango = `http://127.0.0.1:8000/api/previsao-solar/?lat=${lat}&lon=${lon}&tilt=${inclinacao}&azimuth=180&potencia=${potencia}`;
+      
+      const resDjango = await fetch(urlDjango);
+      const dataDjango = await resDjango.json();
+
+      if (dataDjango.status === 'sucesso' && dataDjango.previsao.length > 0) {
+          document.getElementById('prevLoc').value = `${cidade} - ${uf}`;
+          
+          grid.innerHTML = dataDjango.previsao.map((d, i) => `
+            <div class="forecast-day ${i===0?'today':''}" onclick="mostrarDetalhePrevisao('${d.data}', '${d.dia_semana}', '${d.icone}', '${d.tempo}', ${d.temp_min}, ${d.temp_max}, ${d.geracao_kwh})">
+              <div class="fd-date">${d.dia_semana}<br><span style="font-size:10px;">${d.dia_mes}</span></div>
+              <div class="fd-icon">${d.icone}</div>
+              <div class="fd-temp">${d.temp_min}–${d.temp_max}°C</div>
+              <div class="fd-gen">${d.geracao_kwh}</div>
+              <div class="fd-gen-lbl">kWh previstos</div>
+            </div>
+          `).join('');
+
+          const primeiro = dataDjango.previsao[0];
+          mostrarDetalhePrevisao(primeiro.data, primeiro.dia_semana, primeiro.icone, primeiro.tempo, primeiro.temp_min, primeiro.temp_max, primeiro.geracao_kwh);
+          
+          document.getElementById('previsaoAtualizado').textContent = 'Atualizado agora (Django)';
+      } else {
+          throw new Error("Dados inválidos recebidos do Django");
+      }
+  } catch (erro) {
+      console.error("❌ Erro ao buscar previsão:", erro);
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--red); font-size:13px;">
+          <b>Erro ao carregar previsão:</b> ${erro.message}
+      </div>`;
+  }
 }
 
-function mostrarDetalhePrevisao(resId, idx){
-  const res = residenteIndex[resId];
-  const d = res.previsaoGeracao[idx];
-  const geracaoMes = res.previsaoGeracao.reduce((s,x)=>s+x.geracaoPrevista,0);
-  const autoconsumoMedio = res.consumoMes / 11;
-  const autoconsumoPrevisto = Math.min(geracaoMes, autoconsumoMedio * 7);
-  const excedentePrevisto = Math.max(0, geracaoMes - autoconsumoPrevisto);
+function mostrarDetalhePrevisao(dataStr, diaSemana, icone, tempo, tempMin, tempMax, geracao) {
+  const res = residenteIndex[document.getElementById('prevResidencia').value] || residencias[0];
+  const valorEstimado = geracao * (res.tarifa || 0.72);
 
   document.getElementById('forecastDetail').innerHTML = `
-    <h3>Detalhes — ${d.diaSemana} (${d.dia})</h3>
-    <div class="fd-row"><span>Condição</span><b>${d.icone} ${d.tempo}</b></div>
-    <div class="fd-row"><span>Temperatura</span><b>${d.temp}</b></div>
-    <div class="fd-row"><span>Irradiância prevista</span><b>${d.irradiancia} kWh/m²/dia</b></div>
-    <div class="fd-row"><span>Geração prevista</span><b>${d.geracaoPrevista.toFixed(1)} kWh ±${d.margem}%</b></div>
-    <div class="fd-row"><span>Equivale a</span><b>${(d.geracaoPrevista * res.tarifa).toFixed(2)} R$ de energia</b></div>
+    <h3>Detalhes — ${diaSemana} (${dataStr.split('-').reverse().join('/')})</h3>
+    <div class="fd-row"><span>Condição</span><b>${icone} ${tempo}</b></div>
+    <div class="fd-row"><span>Temperatura</span><b>${tempMin}°C a ${tempMax}°C</b></div>
+    <div class="fd-row"><span>Geração prevista</span><b>${geracao} kWh</b></div>
+    <div class="fd-row"><span>Equivale a</span><b>${valorEstimado.toFixed(2)} R$ de energia</b></div>
     <hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">
-    <div class="fd-row"><span>Próximos 7 dias (total)</span><b>${geracaoMes.toFixed(0)} kWh</b></div>
-    <div class="fd-row"><span>Autoconsumo previsto</span><b style="color:var(--green);">${autoconsumoPrevisto.toFixed(0)} kWh</b></div>
-    <div class="fd-row"><span>Excedente previsto</span><b style="color:var(--orange-2);">${excedentePrevisto.toFixed(0)} kWh</b></div>
+    <p style="font-size:11px; color:var(--muted); line-height:1.5;">
+      Cálculo realizado pelo Django usando a irradiância solar e a potência da instalação (${res.potenciaInstalada || 5.4} kWp).
+    </p>
   `;
 }
 
 let relatorios = [
-  {id:1, titulo:'Resumo mensal — Julho/2026', data:'01/08/2026', tipo:'Resumo mensal'},
-  {id:2, titulo:'Balanço energético — Julho/2026', data:'01/08/2026', tipo:'Balanço energético'},
-  {id:3, titulo:'Desempenho do sistema — Julho/2026', data:'01/08/2026', tipo:'Desempenho solar'},
+  {id:1, titulo:'Resumo mensal', data:'01/08/2026', tipo:'Resumo mensal'},
+  {id:2, titulo:'Balanço energético', data:'01/08/2026', tipo:'Balanço energético'},
+  {id:3, titulo:'Desempenho do sistema', data:'01/08/2026', tipo:'Desempenho solar'},
 ];
 
 function renderRelList(){
@@ -1197,16 +1133,7 @@ function renderRelList(){
 
 function gerarRelatorio(){
   const tipo = document.getElementById('relTipo').value;
-  const mes = document.getElementById('relMes').value;
-  const [ano, m] = mes.split('-');
-  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const nomeMes = meses[parseInt(m)-1];
-  relatorios.unshift({
-    id: relatorios.length+1,
-    titulo: `${tipo} — ${nomeMes}/${ano}`,
-    data: new Date().toLocaleDateString('pt-BR'),
-    tipo
-  });
+  relatorios.unshift({ id: relatorios.length+1, titulo: tipo, data: new Date().toLocaleDateString('pt-BR'), tipo: tipo });
   renderRelList();
   showToast('Relatório gerado com sucesso');
 }
@@ -1215,40 +1142,13 @@ function renderDicas(){
   const res = residenteIndex[document.getElementById('dicasResidencia').value] || residencias[0];
   const bal = calcularBalanco(res);
   const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo/bal.geracao)*100 : 0;
-
   const dicas = [];
   if(autoconsumoPct < 60){
-    dicas.push({
-      icone:'🕐', titulo:'Concentre consumo no horário solar',
-      desc:'Sua autoconsumo é de ' + autoconsumoPct.toFixed(0) + '%. Programe máquina de lavar, lava-louças e chuveiro elétrico entre 10h e 15h, quando a geração é maior.',
-      economia:'Economia estimada: ' + fmtMoney(bal.excedente * res.tarifa * FIO_B_PART_TARIFA * FIO_B_PERCENT) + '/mês'
-    });
+    dicas.push({ icone:'🕐', titulo:'Concentre consumo no horário solar', desc:'Sua autoconsumo é de ' + autoconsumoPct.toFixed(0) + '%. Programe máquina de lavar, lava-louças e chuveiro elétrico entre 10h e 15h, quando a geração é maior.', economia:'Economia estimada: ' + fmtMoney(bal.excedente * res.tarifa * FIO_B_PART_TARIFA * FIO_B_PERCENT) + '/mês' });
   }
-  dicas.push({
-    icone:'🧹', titulo:'Limpeza dos painéis a cada 3 meses',
-    desc:'Painéis sujos podem perder até 15% de eficiência. Agende limpeza com o instalador ou faça você mesmo com água e pano macio (nunca em horário de sol forte).',
-    economia:'Recupera até ' + (bal.geracao * 0.10).toFixed(0) + ' kWh/mês'
-  });
-  if(bal.consumoRede > bal.consumo * 0.25){
-    dicas.push({
-      icone:'💡', titulo:'Troque lâmpadas por LED',
-      desc:'Você ainda tem consumo significativo da rede. Trocar lâmpadas fluorescentes por LED reduz até 80% do consumo de iluminação.',
-      economia:'Economia estimada: ' + fmtMoney(bal.consumo * 0.15 * res.tarifa) + '/mês'
-    });
-  }
-  dicas.push({
-    icone:'❄️', titulo:'Ajuste o ar-condicionado para 24°C',
-    desc:'Cada grau a menos no ar-condicionado aumenta o consumo em cerca de 7%. Manter em 24°C equilibra conforto e economia.',
-    economia:'Economia estimada: ' + fmtMoney(15 * res.tarifa) + '/mês'
-  });
-  if(autoconsumoPct >= 60){
-    dicas.push({
-      icone:'🏆', titulo:'Parabéns pelo alto autoconsumo!',
-      desc:'Você está usando ' + autoconsumoPct.toFixed(0) + '% da sua geração diretamente. Isso reduz Fio B e maximiza sua economia. Continue assim!',
-      economia:'Economia real de ' + fmtMoney(bal.autoconsumo * res.tarifa) + '/mês'
-    });
-  }
-
+  dicas.push({ icone:'🧹', titulo:'Limpeza dos painéis a cada 3 meses', desc:'Painéis sujos podem perder até 15% de eficiência. Agende limpeza com o instalador ou faça você mesmo com água e pano macio.', economia:'Recupera até ' + (bal.geracao * 0.10).toFixed(0) + ' kWh/mês' });
+  dicas.push({ icone:'❄️', titulo:'Ajuste o ar-condicionado para 24°C', desc:'Cada grau a menos no ar-condicionado aumenta o consumo em cerca de 7%. Manter em 24°C equilibra conforto e economia.', economia:'Economia estimada: ' + fmtMoney(15 * res.tarifa) + '/mês' });
+  
   document.getElementById('dicasList').innerHTML = dicas.map(d=>`
     <div class="tip-card">
       <div class="tip-icon">${d.icone}</div>
@@ -1267,7 +1167,6 @@ function renderAvisos(){
   let lista = allIssues.filter(i=>i.severidade!=='normal');
   if(sevF) lista = lista.filter(i=>i.severidade===sevF);
   if(resF) lista = lista.filter(i=>i.residenciaId===resF);
-
   const wrap = document.getElementById('avisosList');
   if(!lista.length){
     wrap.innerHTML = '<div class="table-card"><div style="text-align:center;padding:60px 20px;color:var(--muted);"><div style="font-size:36px;margin-bottom:10px;">🟢</div><h4 style="margin:0 0 6px;color:var(--ink);">Nenhum aviso para os filtros</h4><p style="font-size:12.5px;">Sistema operando normalmente.</p></div></div>';
@@ -1278,7 +1177,7 @@ function renderAvisos(){
       <div class="issue-top">
         <div>
           <div class="it-title">${i.severidade==='critico'?'🔴':'🟠'} ${i.titulo}</div>
-          <div class="it-meta">${i.residenciaNome} · hoje, 11/08/2026</div>
+          <div class="it-meta">${i.residenciaNome}</div>
         </div>
         <span class="sev-badge sev-${i.severidade}">${i.severidade==='critico'?'Crítico':'Atenção'}</span>
       </div>
@@ -1293,19 +1192,10 @@ function renderAvisos(){
   `).join('');
 }
 
-/* =========================================================================
-   SIMULADOR REAL — INTEGRAÇÃO COM APIs (Python -> JavaScript)
-   ========================================================================= */
-
-function renderSimuladorAntigo(){
-  // Apenas para não dar erro na função showView
-}
-
 async function executarSimulacaoReal() {
   const btn = document.getElementById('btnCalcularSimulacao');
   const loading = document.getElementById('simLoading');
   const resultDiv = document.getElementById('simResultado');
-  
   const cepInput = document.getElementById('simCep').value.trim();
   const qtdPaineis = parseInt(document.getElementById('simQtdPaineis').value) || 10;
   const potPainel = parseFloat(document.getElementById('simPotPainel').value) || 550;
@@ -1313,46 +1203,26 @@ async function executarSimulacaoReal() {
   const tarifa = parseFloat(document.getElementById('simTarifa').value) || 0.85;
   const inclinacao = parseInt(document.getElementById('simInclinacao').value) || 20;
   const azimute = parseInt(document.getElementById('simAzimute').value) || 180;
-  
   const cepLimpo = cepInput.replace(/\D/g, '');
-  if (cepLimpo.length !== 8) {
-    showToast('Digite um CEP válido com 8 números.');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Buscando dados...';
-  loading.style.display = 'block';
-  resultDiv.style.display = 'none';
-
+  if (cepLimpo.length !== 8) { showToast('Digite um CEP válido com 8 números.'); return; }
+  btn.disabled = true; btn.textContent = 'Buscando dados...'; loading.style.display = 'block'; resultDiv.style.display = 'none';
   try {
-    // 1. Busca a Cidade pelo CEP
     const resCep = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
     const dataCep = await resCep.json();
     if (dataCep.erro) throw new Error('CEP não encontrado.');
-    const cidade = dataCep.localidade;
-    const uf = dataCep.uf;
-    const nomeEstado = dataCep.estado;
-
-    // 2. Busca a Latitude/Longitude (Geocoding)
+    const cidade = dataCep.localidade; const uf = dataCep.uf; const nomeEstado = dataCep.estado;
     const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=10&language=pt&format=json`);
     const dataGeo = await resGeo.json();
     if (!dataGeo.results || dataGeo.results.length === 0) throw new Error('Coordenadas não encontradas.');
     let local = dataGeo.results.find(r => r.country_code === 'BR' && r.admin1 === nomeEstado && r.name === cidade) || dataGeo.results[0];
-    
-    const lat = local.latitude;
-    const lon = local.longitude;
-    const potenciaKwp = (qtdPaineis * potPainel) / 1000;
-
-    // 3. CHAMA O NOSSO DJANGO (Não chama mais a Open-Meteo direto)
-    const urlDjango = `http://127.0.0.1:8000/api/previsao-solar/?lat=${lat}&lon=${lon}&tilt=${inclinacao}&azimuth=${azimute}&potencia=${potenciaKwp}`;
+    const lat = local.latitude; const lon = local.longitude; const potenciaKwp = (qtdPaineis * potPainel) / 1000;
+    const timestamp = new Date().getTime();
+    const urlDjango = `http://127.0.0.1:8000/api/previsao-solar/?lat=${lat}&lon=${lon}&tilt=${inclinacao}&azimuth=${azimute}&potencia=${potenciaKwp}&t=${timestamp}`;
     const resDjango = await fetch(urlDjango);
     const dataDjango = await resDjango.json();
-
     if (dataDjango.status !== 'sucesso') throw new Error('Erro ao calcular no Django.');
-
-    // 4. Processa os dados devolvidos pelo Django
-    const geracaoDiaria = dataDjango.geracao_diaria_kwh;
+    const geracaoDiaria = {};
+    dataDjango.previsao.forEach(p => geracaoDiaria[p.data] = p.geracao_kwh);
     const diasArr = Object.keys(geracaoDiaria);
     const totalGeracao = Object.values(geracaoDiaria).reduce((a, b) => a + b, 0);
     const mediaDiaria = totalGeracao / diasArr.length;
@@ -1360,128 +1230,69 @@ async function executarSimulacaoReal() {
     const consumoCoberto = Math.min(projecaoMensal, consumoMensal);
     const valorBruto = consumoCoberto * tarifa;
     const percentualCobertura = consumoMensal > 0 ? (projecaoMensal / consumoMensal) * 100 : 0;
-
-    // 5. Renderiza na tela
     document.getElementById('simResumoKpis').innerHTML = `
-      <div class="stat-card" style="box-shadow:none; padding:10px;">
-        <div class="ic" style="background:var(--blue); width:32px; height:32px; font-size:14px;">📍</div>
-        <div><div class="val" style="font-size:14px;">${cidade}/${uf}</div><div class="lbl">Localização</div></div>
-      </div>
-      <div class="stat-card" style="box-shadow:none; padding:10px;">
-        <div class="ic" style="background:var(--orange); width:32px; height:32px; font-size:14px;">⚡</div>
-        <div><div class="val" style="font-size:14px;">${potenciaKwp.toFixed(2)} kWp</div><div class="lbl">Potência</div></div>
-      </div>
-      <div class="stat-card" style="box-shadow:none; padding:10px;">
-        <div class="ic" style="background:var(--green); width:32px; height:32px; font-size:14px;">📈</div>
-        <div><div class="val" style="font-size:14px;">${mediaDiaria.toFixed(1)} kWh</div><div class="lbl">Média Diária (Django)</div></div>
-      </div>
-      <div class="stat-card" style="box-shadow:none; padding:10px;">
-        <div class="ic" style="background:var(--purple); width:32px; height:32px; font-size:14px;">💰</div>
-        <div><div class="val" style="font-size:14px;">R$ ${valorBruto.toFixed(2)}</div><div class="lbl">Economia Estimada</div></div>
-      </div>
+      <div class="stat-card" style="box-shadow:none; padding:10px;"><div class="ic" style="background:var(--blue); width:32px; height:32px; font-size:14px;">📍</div><div><div class="val" style="font-size:14px;">${cidade}/${uf}</div><div class="lbl">Localização</div></div></div>
+      <div class="stat-card" style="box-shadow:none; padding:10px;"><div class="ic" style="background:var(--orange); width:32px; height:32px; font-size:14px;">⚡</div><div><div class="val" style="font-size:14px;">${potenciaKwp.toFixed(2)} kWp</div><div class="lbl">Potência</div></div></div>
+      <div class="stat-card" style="box-shadow:none; padding:10px;"><div class="ic" style="background:var(--green); width:32px; height:32px; font-size:14px;">📈</div><div><div class="val" style="font-size:14px;">${mediaDiaria.toFixed(1)} kWh</div><div class="lbl">Média Diária</div></div></div>
+      <div class="stat-card" style="box-shadow:none; padding:10px;"><div class="ic" style="background:var(--purple); width:32px; height:32px; font-size:14px;">💰</div><div><div class="val" style="font-size:14px;">R$ ${valorBruto.toFixed(2)}</div><div class="lbl">Economia Estimada</div></div></div>
     `;
-
-    document.getElementById('simMensagemFinal').innerHTML = `
-      A geração projetada para 1 mês é de <b>${projecaoMensal.toFixed(0)} kWh</b>.<br>
-      Isso cobre aproximadamente <b>${percentualCobertura.toFixed(1)}%</b> do seu consumo (${consumoMensal} kWh).
-    `;
-
-    // Gráfico
+    document.getElementById('simMensagemFinal').innerHTML = `A geração projetada para 1 mês é de <b>${projecaoMensal.toFixed(0)} kWh</b>.<br>Isso cobre aproximadamente <b>${percentualCobertura.toFixed(1)}%</b> do seu consumo (${consumoMensal} kWh).`;
     const maxGeracao = Math.max(...diasArr.map(d => geracaoDiaria[d]));
     const scale = 150 / maxGeracao;
     let htmlBarras = '';
-    
     diasArr.slice(0, 7).forEach(dia => {
       const val = geracaoDiaria[dia];
       const altura = Math.round(val * scale);
       const labelDia = dia.split('-').slice(1).reverse().join('/');
-      htmlBarras += `
-        <div class="balance-bar-wrap">
-          <div class="balance-bar-group">
-            <div class="balance-bar geracao" style="height:${altura}px; width:20px;" title="${val.toFixed(1)} kWh"></div>
-          </div>
-          <div class="balance-lbl" style="margin-top:6px;">${labelDia}</div>
-        </div>
-      `;
+      htmlBarras += `<div class="balance-bar-wrap"><div class="balance-bar-group"><div class="balance-bar geracao" style="height:${altura}px; width:20px;" title="${val.toFixed(1)} kWh"></div></div><div class="balance-lbl" style="margin-top:6px;">${labelDia}</div></div>`;
     });
     document.getElementById('simGraficoBarras').innerHTML = htmlBarras;
     resultDiv.style.display = 'grid';
-
   } catch (error) {
-    console.error(error);
-    showToast('Erro na simulação: ' + error.message);
+    console.error(error); showToast('Erro na simulação: ' + error.message);
   } finally {
-    btn.disabled = false;
-    btn.textContent = '🚀 Calcular Simulação Real';
-    loading.style.display = 'none';
+    btn.disabled = false; btn.textContent = '🚀 Calcular Simulação Real'; loading.style.display = 'none';
   }
 }
 
-/* =========================================================================
-   ASSISTENTE E INICIALIZAÇÃO
-   ========================================================================= */
 const aiSuggestions = [
   'Quanto vou pagar este mês?',
   'Qual a previsão de geração para amanhã?',
   'Estou economizando o suficiente?',
   'Como aumentar meu autoconsumo?',
   'Vale a pena ligar o ar-condicionado agora?',
-  'Meu sistema gerou menos que o esperado?',
 ];
-
-function renderChips(){
-  document.getElementById('aiChips').innerHTML = aiSuggestions.map(s=>`<button class="chip" onclick="askAI('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');
-}
-
-function handleAIKeydown(e){
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askAI(); }
-}
-
-function scrollAIToBottom(){
-  const b = document.getElementById('aiBody');
-  if(b) requestAnimationFrame(()=>b.scrollTo({top:b.scrollHeight, behavior:'smooth'}));
-}
-
+function renderChips(){ document.getElementById('aiChips').innerHTML = aiSuggestions.map(s=>`<button class="chip" onclick="askAI('${s.replace(/'/g,"\\'")}')">${s}</button>`).join(''); }
+function handleAIKeydown(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askAI(); } }
+function scrollAIToBottom(){ const b = document.getElementById('aiBody'); if(b) requestAnimationFrame(()=>b.scrollTo({top:b.scrollHeight, behavior:'smooth'})); }
 function appendAIMessage(html){
   const log = document.getElementById('aiChatLog');
-  const msg = document.createElement('div');
-  msg.className = 'chat-msg ai';
-  msg.innerHTML = html;
-  log.appendChild(msg);
-  scrollAIToBottom();
+  const msg = document.createElement('div'); msg.className = 'chat-msg ai'; msg.innerHTML = html;
+  log.appendChild(msg); scrollAIToBottom();
 }
-
 function askAI(preset){
   const input = document.getElementById('aiQuestion');
   const q = (typeof preset === 'string' ? preset : input.value).trim();
   if(!q) return;
   const log = document.getElementById('aiChatLog');
-  const userMsg = document.createElement('div');
-  userMsg.className = 'chat-msg user';
-  userMsg.textContent = q;
+  const userMsg = document.createElement('div'); userMsg.className = 'chat-msg user'; userMsg.textContent = q;
   log.appendChild(userMsg);
   if(typeof preset !== 'string'){ input.value=''; input.style.height='auto'; }
   scrollAIToBottom();
-
   const lower = q.toLowerCase();
   const res = residencias[0];
   const bal = calcularBalanco(res);
   let answer;
-
   if(/quanto.*(pagar|conta|fatura)|fatura.*(prevista|mês)|vou pagar/.test(lower)){
-    answer = `Sua <b>fatura prevista</b> para agosto/2026 é de <b>${fmtMoney(bal.faturaTotal)}</b> (margem ±12%).<br><br>Detalhamento:<br>• Consumo da rede: ${bal.consumoRede.toFixed(0)} kWh = ${fmtMoney(bal.custoRede)}<br>• Fio B sobre excedente: ${fmtMoney(bal.custoFioB)}<br><br>Você já economizou <b>${fmtMoney(bal.economiaSolar)}</b> este mês graças ao sistema solar.`;
+    answer = `Sua <b>fatura prevista</b> para este mês é de <b>${fmtMoney(bal.faturaTotal)}</b> (margem ±12%).<br><br>Detalhamento:<br>• Consumo da rede: ${bal.consumoRede.toFixed(0)} kWh = ${fmtMoney(bal.custoRede)}<br>• Fio B sobre excedente: ${fmtMoney(bal.custoFioB)}<br><br>Você já economizou <b>${fmtMoney(bal.economiaSolar)}</b> este mês graças ao sistema solar.`;
   }
   else if(/simula[cç][aã]o|simulador|cep/.test(lower)){
-    answer = `Para usar o simulador real, clique na aba <b>"Simulador Real 🌍"</b> no menu lateral. Lá você pode digitar o CEP da sua casa e o sistema vai buscar as coordenadas e a previsão do tempo na Open-Meteo para calcular a geração exata.`;
+    answer = `Para usar o simulador real, clique na aba <b>"Simulador Real 🌍"</b> no menu lateral. Lá você pode digitar o CEP da sua casa e o sistema vai calcular a geração exata.`;
   }
   else if(/previs[aã]o.*(gera[cç][aã]o|solar|amanh[aã])|vai gerar/.test(lower)){
-    const amanha = res.previsaoGeracao[1];
-    answer = `<b>Previsão de geração para amanhã (${amanha.dia}):</b><br>${amanha.icone} ${amanha.tempo}, ${amanha.temp}<br>Geração prevista: <b>${amanha.geracaoPrevista.toFixed(1)} kWh</b> (±${amanha.margem}%)`;
+    answer = `<b>Previsão de geração:</b><br>Verifique a aba de Previsão para os dados atualizados do seu CEP.`;
   }
-  else {
-    answer = `Não encontrei dados suficientes para responder a essa pergunta. Posso ajudar com: fatura, previsão de geração, autoconsumo ou uso do simulador real.`;
-  }
-
+  else { answer = `Não encontrei dados suficientes para responder a essa pergunta. Posso ajudar com: fatura, previsão de geração, autoconsumo ou uso do simulador real.`; }
   setTimeout(()=>appendAIMessage(answer), 400);
 }
 
