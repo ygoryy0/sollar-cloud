@@ -2,6 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Sum
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Residencia, Leitura
 from .serializers import ResidenciaSerializer, LeituraSerializer
 import requests
@@ -14,6 +17,38 @@ class ResidenciaViewSet(viewsets.ModelViewSet):
 class LeituraViewSet(viewsets.ModelViewSet):
     queryset = Leitura.objects.all()
     serializer_class = LeituraSerializer
+
+class LoginView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        try:
+            user_obj = User.objects.get(email=email)
+            username = user_obj.username
+        except User.DoesNotExist:
+            return Response({"erro": "E-mail ou senha inválidos."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            
+            residencia_id = None
+            try:
+                res = Residencia.objects.get(usuario=user)
+                residencia_id = res.id
+            except Residencia.DoesNotExist:
+                pass
+
+            return Response({
+                "status": "sucesso",
+                "access": str(refresh.access_token),
+                "nome": user.first_name or user.username,
+                "residencia_id": residencia_id
+            })
+        else:
+            return Response({"erro": "E-mail ou senha inválidos."}, status=status.HTTP_401_UNAUTHORIZED)
 
 class PrevisaoSolarView(APIView):
     def get(self, request):
@@ -45,7 +80,6 @@ class PrevisaoSolarView(APIView):
             eficiencia = 0.97
             perdas = 0.10
 
-            # Calcula geração hora a hora
             for i in range(len(tempos)):
                 dia = tempos[i].split('T')[0]
                 irr = max(0, irradiancias[i] or 0)
@@ -57,16 +91,14 @@ class PrevisaoSolarView(APIView):
                 geracao_diaria[dia] += pot_ac
 
             previsao_formatada = []
-            
-            # Dicionário para traduzir o dia da semana
             dias_semana_pt = {0: 'Seg', 1: 'Ter', 2: 'Qua', 3: 'Qui', 4: 'Sex', 5: 'Sáb', 6: 'Dom'}
 
             for i, dia_str in enumerate(dias):
                 data_obj = datetime.datetime.strptime(dia_str, '%Y-%m-%d')
-                
                 codigo = climas[i]
                 icone = '☀️'
                 tempo = 'Ensolarado'
+                
                 if codigo in [1, 2, 3]: icone, tempo = '⛅', 'Parcial. nublado'
                 elif codigo in [45, 48]: icone, tempo = '🌫️', 'Nevoeiro'
                 elif codigo in [51, 53, 55, 61, 63, 65, 80, 81, 82]: icone, tempo = '🌧️', 'Chuva'
@@ -75,7 +107,7 @@ class PrevisaoSolarView(APIView):
 
                 previsao_formatada.append({
                     "data": dia_str,
-                    "dia_semana": dias_semana_pt[data_obj.weekday()], # Traduzido aqui
+                    "dia_semana": dias_semana_pt[data_obj.weekday()],
                     "dia_mes": data_obj.strftime('%d/%m'),
                     "icone": icone,
                     "tempo": tempo,

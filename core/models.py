@@ -1,13 +1,13 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Residencia(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     nome = models.CharField(max_length=100)
     apelido = models.CharField(max_length=50)
     cep = models.CharField(max_length=9)
     cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=2)
-    
-    # Dados do sistema solar
     potencia_instalada = models.DecimalField(max_digits=5, decimal_places=2, help_text="Em kWp")
     inclinacao = models.IntegerField(default=20)
     orientacao = models.CharField(max_length=20, default="Norte")

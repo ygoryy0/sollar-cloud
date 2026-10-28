@@ -8,8 +8,7 @@
   :root{
     --navy:#0B132B; --navy-2:#1C2541;
     --orange:#F4A531; --orange-2:#E08C1F; --orange-soft:#fff4e0;
-    --yellow:#F9C74F;
-    --blue:#1F7FE0; --blue-soft:#e8f0fb;
+    --yellow:#F9C74F; --blue:#1F7FE0; --blue-soft:#e8f0fb;
     --cyan:#17c4d8; --green:#2fae5e; --green-soft:#e4f7ea;
     --red:#d9534f; --red-soft:#fbe6e5; --purple:#6b5fd9;
     --ink:#1c2436; --muted:#7b8496;
@@ -283,7 +282,32 @@
 </head>
 <body>
 
-<div class="app">
+<!-- TELA DE LOGIN -->
+<div id="telaLogin" style="position:fixed; inset:0; z-index:9999; background:var(--navy); display:flex; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#fff; border-radius:16px; padding:40px 30px; width:100%; max-width:400px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+    <img src="logo.png" alt="Kivora" style="width:80px; height:80px; border-radius:50%; object-fit:cover; object-position:center 25%; margin-bottom:15px; border:3px solid var(--orange);">
+    <h2 style="margin:0 0 5px; font-size:24px; color:var(--navy);">Bem-vindo à Kivora</h2>
+    <p style="margin:0 0 25px; font-size:13px; color:var(--muted);">Energia Inteligente para um Amanhã Melhor</p>
+
+    <div style="text-align:left; margin-bottom:15px;">
+      <label style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">E-mail</label>
+      <input type="email" id="loginEmail" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px; outline:none;">
+    </div>
+    
+    <div style="text-align:left; margin-bottom:25px;">
+      <label style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Senha</label>
+      <input type="password" id="loginSenha" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px; outline:none;">
+    </div>
+
+    <div id="loginErro" style="color:var(--red); font-size:12px; font-weight:600; margin-bottom:15px; display:none;"></div>
+
+    <button onclick="fazerLogin()" id="btnLogin" style="width:100%; padding:14px; background:var(--orange); color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; transition:background 0.2s;">
+      Entrar no Sistema
+    </button>
+  </div>
+</div>
+
+<div class="app" id="appPrincipal" style="display:none;">
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
 
   <!-- SIDEBAR -->
@@ -327,7 +351,7 @@
     <div class="topbar">
       <button class="hamburger" onclick="toggleSidebar()" aria-label="Abrir menu">☰</button>
       <div class="crumbs">Kivora / <b id="crumbCurrent">Visão Geral</b></div>
-      <div class="user-chip"><div class="avatar">MS</div> <span id="topUserName">Maria Silva</span></div>
+      <div class="user-chip"><div class="avatar">M</div> <span id="topUserName">Maria Silva</span> <button onclick="sair()" style="margin-left:10px; font-size:10px; padding:3px 8px; border:none; background:var(--border); border-radius:4px; cursor:pointer;">Sair</button></div>
     </div>
 
     <div class="content">
@@ -730,7 +754,7 @@
     <div class="chip-row" id="aiChips"></div>
     <div class="section-label">Conversa</div>
     <div class="ai-chat-log" id="aiChatLog">
-      <div class="chat-msg ai">Olá, Maria! 👋 Sou o Assistente Kivora. Posso te ajudar a entender sua conta de luz, prever sua geração solar ou descobrir como economizar mais. O que você quer saber?</div>
+      <div class="chat-msg ai">Olá! 👋 Sou o Assistente Kivora. Posso te ajudar a entender sua conta de luz, prever sua geração solar ou descobrir como economizar mais. O que você quer saber?</div>
     </div>
   </div>
   <div class="ai-input-bar">
@@ -744,7 +768,7 @@
 
 <script>
 /* =========================================================================
-   DADOS SIMULADOS (FALLBACK)
+   ESTADO GLOBAL E DADOS SIMULADOS (FALLBACK)
    ========================================================================= */
 const residencias = [
   {
@@ -756,95 +780,17 @@ const residencias = [
     consumoDiario:[9.2,8.8,10.1,7.9,11.2,9.5,8.4,8.8,9.1,10.2,8.5,9.4,11.1,8.9,9.6,10.4,9.2,8.7,9.9,10.1,8.3,9.6,10.8,9.4,8.9,9.1,10.2,9.5,8.8,9.6],
     geracaoDiaria:[18.2,17.5,19.1,16.8,20.3,19.4,18.8,17.2,19.6,18.1,17.9,19.3,20.1,18.5,19.2,17.7,18.9,19.8,20.4,18.3,17.6,19.1,18.7,19.5,20.2,18.4,19.3,18.9,17.8,19.6],
     inversorOnline:true,
-    previsaoGeracao:[] // Vazio, pois será preenchido via API
+    previsaoGeracao:[]
   }
 ];
 
 const residenteIndex = Object.fromEntries(residencias.map(r=>[r.id,r]));
-
 const FIO_B_PERCENT = 0.60;
 const FIO_B_PART_TARIFA = 0.28;
 
-function calcularBalanco(res){
-  const consumo = res.consumoMes;
-  const geracao = res.geracaoMes;
-  const autoconsumo = Math.min(consumo, geracao);
-  const excedente = Math.max(0, geracao - consumo);
-  const consumoRede = Math.max(0, consumo - geracao);
-  const custoRede = consumoRede * res.tarifa;
-  const custoFioB = excedente * FIO_B_PART_TARIFA * FIO_B_PERCENT * res.tarifa;
-  const custoDisponibilidade = res.tipoLigacao === 'Trifásico' ? 50 * res.tarifa : 30 * res.tarifa;
-  const faturaTotal = custoRede + custoFioB + (consumoRede === 0 ? custoDisponibilidade : 0);
-  const economiaSolar = (autoconsumo + excedente) * res.tarifa - custoFioB;
-  return {consumo, geracao, autoconsumo, excedente, consumoRede, custoRede, custoFioB, custoDisponibilidade, faturaTotal, economiaSolar};
-}
-
-function preverConsumo(res){
-  const diasNoMes = 31;
-  const diasDecorridos = 11;
-  const diasRestantes = diasNoMes - diasDecorridos;
-  const mediaDiaria = res.consumoDiario.reduce((s,v)=>s+v,0) / res.consumoDiario.length;
-  const consumoPrevistoRestante = mediaDiaria * diasRestantes;
-  const consumoTotalPrevisto = res.consumoMes + consumoPrevistoRestante;
-  const margemErro = 0.12;
-  return {
-    realizado: res.consumoMes,
-    previstoRestante: consumoPrevistoRestante,
-    totalPrevisto: consumoTotalPrevisto,
-    margemMin: consumoTotalPrevisto * (1 - margemErro),
-    margemMax: consumoTotalPrevisto * (1 + margemErro),
-    mediaDiaria
-  };
-}
-
-function analyzeResidencia(res){
-  const issues = [];
-  const bal = calcularBalanco(res);
-  const proj = preverConsumo(res);
-  const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo / bal.geracao) * 100 : 0;
-
-  if(!res.inversorOnline){
-    issues.push({
-      tipo:'inversor_offline', severidade:'critico',
-      titulo:'Inversor offline',
-      evidencia:`O inversor da ${res.apelido} não envia leituras há mais de 2 horas.`,
-      consequencia:'Sem geração solar, toda a energia consumida está vindo da rede — fatura pode subir rapidamente.',
-      recomendacao:'Verificar conexão do inversor (Wi-Fi/cabo) e status no painel físico. Se persistir, acionar o instalador.'
-    });
-  }
-
-  if(autoconsumoPct < 50 && bal.geracao > 0){
-    issues.push({
-      tipo:'autoconsumo_baixo', severidade:'atencao',
-      titulo:'Autoconsumo abaixo do ideal',
-      evidencia:`Apenas ${autoconsumoPct.toFixed(0)}% da energia gerada está sendo consumida na hora. O restante vai para a rede e paga 60% do Fio B quando compensado.`,
-      consequencia:'Você está pagando Fio B desnecessariamente — a energia poderia estar sendo usada diretamente.',
-      recomendacao:'Concentre consumo de equipamentos de alto consumo (ar-condicionado, máquina de lavar, chuveiro elétrico) entre 10h e 15h, quando a geração é maior.'
-    });
-  }
-
-  if(issues.length === 0){
-    issues.push({
-      tipo:'normal', severidade:'normal',
-      titulo:'Sistema operando normalmente',
-      evidencia:`Consumo, geração e autoconsumo da ${res.apelido} estão dentro do esperado.`,
-      consequencia:'Nenhuma ação necessária no momento.',
-      recomendacao:'Continue monitorando pelo painel.'
-    });
-  }
-
-  return issues.map(i => ({...i, residenciaId:res.id, residenciaNome:res.apelido, bal, proj}));
-}
-
-let allIssues = [];
-function rebuildIssues(){
-  allIssues = residencias.flatMap(r => analyzeResidencia(r));
-  const w = {critico:3, atencao:2, normal:1};
-  allIssues.sort((a,b)=>w[b.severidade]-w[a.severidade]);
-  allIssues.forEach((iss,i)=> iss._id = 'AV-' + (i+1));
-}
-rebuildIssues();
-
+/* =========================================================================
+   FUNÇÕES UTILITÁRIAS
+   ========================================================================= */
 function fmtMoney(v){ return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2}); }
 function showToast(msg){
   const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
@@ -864,12 +810,72 @@ function toggleAI(open){
   if(open) renderChips();
 }
 
+/* =========================================================================
+   LÓGICA DE CÁLCULO E ANÁLISE (SIMULADOS)
+   ========================================================================= */
+function calcularBalanco(res){
+  const consumo = res.consumoMes;
+  const geracao = res.geracaoMes;
+  const autoconsumo = Math.min(consumo, geracao);
+  const excedente = Math.max(0, geracao - consumo);
+  const consumoRede = Math.max(0, consumo - geracao);
+  const custoRede = consumoRede * res.tarifa;
+  const custoFioB = excedente * FIO_B_PART_TARIFA * FIO_B_PERCENT * res.tarifa;
+  const custoDisponibilidade = res.tipoLigacao === 'Trifásico' ? 50 * res.tarifa : 30 * res.tarifa;
+  const faturaTotal = custoRede + custoFioB + (consumoRede === 0 ? custoDisponibilidade : 0);
+  const economiaSolar = (autoconsumo + excedente) * res.tarifa - custoFioB;
+  return {consumo, geracao, autoconsumo, excedente, consumoRede, custoRede, custoFioB, custoDisponibilidade, faturaTotal, economiaSolar};
+}
+
+function analyzeResidencia(res){
+  const issues = [];
+  const bal = calcularBalanco(res);
+  const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo / bal.geracao) * 100 : 0;
+
+  if(autoconsumoPct < 50 && bal.geracao > 0){
+    issues.push({
+      tipo:'autoconsumo_baixo', severidade:'atencao',
+      titulo:'Autoconsumo abaixo do ideal',
+      evidencia:`Apenas ${autoconsumoPct.toFixed(0)}% da energia gerada está sendo consumida na hora.`,
+      consequencia:'Você está pagando Fio B desnecessariamente.',
+      recomendacao:'Concentre consumo de equipamentos entre 10h e 15h.'
+    });
+  }
+
+  if(issues.length === 0){
+    issues.push({
+      tipo:'normal', severidade:'normal',
+      titulo:'Sistema operando normalmente',
+      evidencia:`Consumo, geração e autoconsumo estão dentro do esperado.`,
+      consequencia:'Nenhuma ação necessária no momento.',
+      recomendacao:'Continue monitorando pelo painel.'
+    });
+  }
+
+  return issues.map(i => ({...i, residenciaId:res.id, residenciaNome:res.apelido, bal}));
+}
+
+let allIssues = [];
+function rebuildIssues(){
+  allIssues = residencias.flatMap(r => analyzeResidencia(r));
+  allIssues.sort((a,b)=> {
+      const w = {critico:3, atencao:2, normal:1};
+      return w[b.severidade] - w[a.severidade];
+  });
+  allIssues.forEach((iss,i)=> iss._id = 'AV-' + (i+1));
+}
+rebuildIssues();
+
+/* =========================================================================
+   NAVEGAÇÃO E LOGIN
+   ========================================================================= */
 const crumbs = {
   dashboard:'Visão Geral', balanco:'Balanço Energético', previsao:'Previsão de Geração',
   relatorio:'Relatórios', dicas:'Dicas de Economia', avisos:'Avisos',
   simulador:'Simulador Real', config:'Configurações',
   conta:'Meus Dados', faturas:'Histórico de Faturas', documentos:'Documentos', comunidade:'Comunidade'
 };
+
 function showView(name, btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const v = document.getElementById('view-'+name);
@@ -878,15 +884,78 @@ function showView(name, btn){
   if(btn) btn.classList.add('active');
   else document.querySelector('.nav-item[data-view="'+name+'"]')?.classList.add('active');
   document.getElementById('crumbCurrent').textContent = crumbs[name] || name;
+  
   if(name==='dashboard') renderDashboard();
   if(name==='balanco') renderBalanco();
   if(name==='previsao') renderPrevisao();
   if(name==='relatorio') renderRelList();
   if(name==='dicas') renderDicas();
   if(name==='avisos') renderAvisos();
+  
   if(window.innerWidth <= 640) toggleSidebar(false);
 }
 
+async function fazerLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const senha = document.getElementById('loginSenha').value;
+  const btn = document.getElementById('btnLogin');
+  const erroDiv = document.getElementById('loginErro');
+
+  if (!email || !senha) {
+    erroDiv.textContent = "Preencha o e-mail e a senha.";
+    erroDiv.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = "Verificando...";
+  btn.disabled = true;
+  erroDiv.style.display = 'none';
+
+  try {
+    const resposta = await fetch('http://127.0.0.1:8000/api/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: senha })
+    });
+
+    const data = await resposta.json();
+
+      if (resposta.ok) {
+      localStorage.setItem('kivora_token', data.access);
+      localStorage.setItem('kivora_user', data.nome);
+      localStorage.setItem('kivora_residencia_id', data.residencia_id);
+
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('appPrincipal').style.display = 'flex';
+      
+      // ALTERE AQUI: Em vez de substituir a div inteira, atualiza só o nome e a bolinha
+      document.querySelector('.user-chip .avatar').textContent = data.nome.charAt(0);
+      document.getElementById('topUserName').textContent = data.nome;
+      
+      renderDashboard();
+    } else {
+      erroDiv.textContent = data.erro || "E-mail ou senha incorretos.";
+      erroDiv.style.display = 'block';
+    }
+  } catch (erro) {
+    erroDiv.textContent = "Erro de conexão com o servidor.";
+    erroDiv.style.display = 'block';
+  } finally {
+    btn.textContent = "Entrar no Sistema";
+    btn.disabled = false;
+  }
+}
+
+function sair() {
+  localStorage.removeItem('kivora_token');
+  localStorage.removeItem('kivora_user');
+  localStorage.removeItem('kivora_residencia_id');
+  location.reload();
+}
+
+/* =========================================================================
+   RENDERIZAÇÃO DAS TELAS
+   ========================================================================= */
 function populateSelects(){
   const html = residencias.map(r=>`<option value="${r.id}">${r.nome} — ${r.apelido}</option>`).join('');
   ['balResidencia','prevResidencia','dicasResidencia'].forEach(id=>{
@@ -899,14 +968,11 @@ function populateSelects(){
 
 async function renderDashboard(){
   let consumoMes = 350, geracaoMes = 420, autoconsumoPct = 83, faturaTotal = 8.47; 
+  const idCasa = localStorage.getItem('kivora_residencia_id');
 
   try {
-      const resLista = await fetch('http://127.0.0.1:8000/api/residencias/');
-      const listaDjango = await resLista.json();
-      
-      if (listaDjango.length > 0) {
-          const idReal = listaDjango[0].id; 
-          const resposta = await fetch(`http://127.0.0.1:8000/api/dashboard/${idReal}/`);
+      if (idCasa) {
+          const resposta = await fetch(`http://127.0.0.1:8000/api/dashboard/${idCasa}/`);
           const data = await resposta.json();
           
           if (data.metricas) {
@@ -919,11 +985,11 @@ async function renderDashboard(){
               
               document.getElementById('topUserName').textContent = data.residencia.nome;
               document.getElementById('dashUserName').textContent = data.residencia.nome.split(' ')[0];
-              console.log("✅ Dados reais do Django carregados! ID:", idReal, data);
+              console.log("✅ Dados da casa do usuário logado carregados!", data);
           }
       }
   } catch (erro) {
-      console.warn("⚠️ Django offline. Usando dados locais.", erro);
+      console.warn("⚠️ Erro ao carregar dados do usuário.", erro);
   }
 
   document.getElementById('dashStats').innerHTML = `
@@ -1106,6 +1172,9 @@ function mostrarDetalhePrevisao(dataStr, diaSemana, icone, tempo, tempMin, tempM
   `;
 }
 
+/* =========================================================================
+   RELATÓRIOS, DICAS E AVISOS
+   ========================================================================= */
 let relatorios = [
   {id:1, titulo:'Resumo mensal', data:'01/08/2026', tipo:'Resumo mensal'},
   {id:2, titulo:'Balanço energético', data:'01/08/2026', tipo:'Balanço energético'},
@@ -1192,6 +1261,9 @@ function renderAvisos(){
   `).join('');
 }
 
+/* =========================================================================
+   SIMULADOR REAL
+   ========================================================================= */
 async function executarSimulacaoReal() {
   const btn = document.getElementById('btnCalcularSimulacao');
   const loading = document.getElementById('simLoading');
@@ -1255,6 +1327,9 @@ async function executarSimulacaoReal() {
   }
 }
 
+/* =========================================================================
+   ASSISTENTE KIVORA
+   ========================================================================= */
 const aiSuggestions = [
   'Quanto vou pagar este mês?',
   'Qual a previsão de geração para amanhã?',
@@ -1296,14 +1371,27 @@ function askAI(preset){
   setTimeout(()=>appendAIMessage(answer), 400);
 }
 
-populateSelects();
-renderDashboard();
-renderBalanco();
-renderPrevisao();
-renderRelList();
-renderDicas();
-renderAvisos();
-renderChips();
+/* =========================================================================
+   INICIALIZAÇÃO
+   ========================================================================= */
+window.onload = () => {
+  populateSelects();
+  renderChips();
+  
+  const token = localStorage.getItem('kivora_token');
+  const nome = localStorage.getItem('kivora_user');
+  
+  if (token && nome) {
+    document.getElementById('telaLogin').style.display = 'none';
+    document.getElementById('appPrincipal').style.display = 'flex';
+    
+    // ALTERE AQUI TAMBÉM:
+    document.querySelector('.user-chip .avatar').textContent = nome.charAt(0);
+    document.getElementById('topUserName').textContent = nome;
+    
+    renderDashboard();
+  }
+};
 </script>
 </body>
 </html>
