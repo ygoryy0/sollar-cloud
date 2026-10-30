@@ -1,7 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Empresa(models.Model):
+    nome = models.CharField(max_length=100)
+    cnpj = models.CharField(max_length=18, blank=True, null=True)
+    data_cadastro = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nome
+
 class Residencia(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, null=True, blank=True, related_name='residencias')
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     nome = models.CharField(max_length=100)
     apelido = models.CharField(max_length=50)
