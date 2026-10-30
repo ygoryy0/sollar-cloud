@@ -70,8 +70,16 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# Configurações de Arquivos Estáticos (Imagens, CSS, JS)
+STATIC_URL = '/static/'
+
+# Pasta onde os arquivos serão coletados para produção (PythonAnywhere)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Pastas onde o Django procura os arquivos durante o desenvolvimento
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

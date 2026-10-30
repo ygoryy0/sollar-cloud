@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kivora — Energia Solar Inteligente</title>
+<!-- Leaflet (Mapa) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Chart.js (Gráficos) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Ícones -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
   :root{
     --navy:#0B132B; --navy-2:#1C2541;
@@ -20,263 +28,293 @@
 
   /* ---- SIDEBAR ---- */
   .sidebar{
-    width:240px;color:#c7cede; background-color:var(--navy);
+    width:250px;color:#c7cede; background-color:var(--navy);
     background-image:
       linear-gradient(180deg,rgba(11,19,43,0) 0%,rgba(11,19,43,.8) 60%,rgba(11,19,43,.98) 100%),
       radial-gradient(circle at 85% 80%,rgba(31,127,224,.15),transparent 55%),
       radial-gradient(circle at 15% 20%,rgba(249,199,79,.10),transparent 45%);
-    background-repeat:no-repeat; background-size:100% 100%,auto,auto;
-    background-position:top,bottom right,top left;
-    display:flex;flex-direction:column;flex-shrink:0;
+    display:flex;flex-direction:column;flex-shrink:0; transition:all 0.3s;
   }
   .brand{
-    display:flex;align-items:center;justify-content:center;gap:10px;padding:18px 16px;
-    font-weight:700;color:#fff;font-size:15px;border-bottom:1px solid #223154;
+    display:flex;align-items:center;justify-content:center;gap:10px;padding:20px 16px;
+    font-weight:700;color:#fff;font-size:16px;border-bottom:1px solid #223154;
   }
   .brand img{height:40px; width:40px; border-radius:50%; object-fit:cover; object-position:center 25%; border: 2px solid var(--orange);}
   .brand span{font-size: 18px; letter-spacing: 2px; color: #fff;}
   
-  .search{margin:12px 14px;background:#1b2946;border-radius:6px;padding:8px 10px;font-size:12px;color:#6b7690;}
+  .search{margin:15px 14px;background:#1b2946;border-radius:8px;padding:10px 12px;font-size:12px;color:#6b7690; display:flex; align-items:center; gap:8px;}
   .nav{padding:6px 8px;flex:1;overflow-y:auto;}
-  .nav-section{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#5b6580;padding:12px 10px 4px;}
+  .nav-section{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#5b6580;padding:16px 12px 6px;font-weight:700;}
   .nav-item{
-    display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;
-    font-size:13px;cursor:pointer;color:#aeb7cc;border:none;background:none;
-    width:100%;text-align:left;font-family:inherit;position:relative;
+    display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;
+    font-size:13.5px;cursor:pointer;color:#aeb7cc;border:none;background:none;
+    width:100%;text-align:left;font-family:inherit;position:relative; transition: all 0.2s;
   }
-  .nav-item:hover{background:#18233d;color:#fff;}
+  .nav-item:hover{background:rgba(255,255,255,0.05);color:#fff;}
   .nav-item.active{background:linear-gradient(90deg,rgba(244,165,49,.15),rgba(244,165,49,.03));color:#fff;}
-  .nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--orange);border-radius:2px;}
-  .nav-item .dot{width:5px;height:5px;border-radius:50%;background:#5b6580;flex-shrink:0;}
-  .nav-item.active .dot{background:var(--orange);}
-  .nav-item .nbadge{margin-left:auto;font-size:9.5px;font-weight:700;background:var(--red);color:#fff;border-radius:20px;padding:1px 6px;}
+  .nav-item.active::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;background:var(--orange);border-radius:2px;}
+  .nav-item i{width:16px; text-align:center; font-size:14px;}
+  .nav-item.active i{color:var(--orange);}
+  .nav-item .nbadge{margin-left:auto;font-size:10px;font-weight:700;background:var(--red);color:#fff;border-radius:20px;padding:2px 7px;}
 
   .ai-launcher{
-    margin:14px;background:linear-gradient(135deg,var(--orange),var(--orange-2));
-    border-radius:10px;padding:12px;cursor:pointer;border:none;color:#fff;
-    text-align:left;display:flex;align-items:center;gap:10px;font-family:inherit;
-    box-shadow:0 4px 14px rgba(244,165,49,.35);transition:transform .15s ease;
+    margin:16px;background:linear-gradient(135deg,var(--orange),var(--orange-2));
+    border-radius:12px;padding:14px;cursor:pointer;border:none;color:#fff;
+    text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit;
+    box-shadow:0 6px 20px rgba(244,165,49,.4);transition:transform .2s ease;
   }
-  .ai-launcher:hover{transform:translateY(-1px);}
-  .ai-launcher .ico{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;}
-  .ai-launcher b{display:block;font-size:12.5px;}
+  .ai-launcher:hover{transform:translateY(-2px);}
+  .ai-launcher .ico{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+  .ai-launcher b{display:block;font-size:13px;}
   .ai-launcher span{display:block;font-size:10.5px;opacity:.9;margin-top:2px;}
 
-  /* ---- MAIN ---- */
-  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
-  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#fff;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--muted);}
-  .topbar .crumbs b{color:var(--ink);}
-  .user-chip{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;}
-  .user-chip .avatar{width:26px;height:26px;border-radius:50%;background:var(--orange-soft);color:var(--orange-2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+  /* ---- MAIN & TOPBAR (Glassmorphism) ---- */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column; background: var(--bg);}
+  
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;padding:12px 30px;
+    background:rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom:1px solid rgba(255,255,255,0.5); font-size:13px;color:var(--muted);
+    position:sticky; top:0; z-index:1000;
+    box-shadow:0 4px 20px rgba(0,0,0,0.03);
+  }
+  .topbar .crumbs{display:flex; align-items:center; gap:8px; font-weight:500;}
+  .topbar .crumbs i{color:var(--muted); font-size:12px;}
+  .topbar .crumbs b{color:var(--navy); font-weight:700;}
+  
+  .user-chip{display:flex;align-items:center;gap:12px;color:var(--ink);font-weight:600;}
+  .user-profile{display:flex; align-items:center; gap:10px; padding:4px 12px 4px 4px; background:#fff; border-radius:30px; box-shadow:0 2px 10px rgba(0,0,0,0.05); border:1px solid var(--border);}
+  .user-profile .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg, var(--orange), var(--orange-2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+  .user-info{display:flex; flex-direction:column;}
+  .user-info span{font-size:13px; color:var(--navy); line-height:1.2;}
+  .user-info small{font-size:10px; color:var(--muted); font-weight:400;}
+  
+  .btn-logout{
+    display:flex; align-items:center; gap:6px; background:var(--red-soft); color:var(--red);
+    border:none; padding:8px 16px; border-radius:20px; font-weight:700; font-size:12px; cursor:pointer; transition:all 0.2s;
+  }
+  .btn-logout:hover{background:var(--red); color:#fff; box-shadow:0 4px 12px rgba(217,83,79,0.3);}
 
-  .content{padding:22px 24px 40px;flex:1;}
-  .view{display:none;}
+  .content{padding:26px 30px 50px;flex:1;}
+  .view{display:none; animation: fadeIn 0.3s ease;}
   .view.active{display:block;}
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   .banner{
-    background:linear-gradient(120deg,var(--orange),var(--orange-2));
-    border-radius:12px;color:#fff;padding:18px 22px;display:flex;align-items:center;
-    justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px;
-    box-shadow:0 4px 16px rgba(244,165,49,.25);
+    background:linear-gradient(120deg,var(--navy),var(--blue));
+    border-radius:16px;color:#fff;padding:24px 28px;display:flex;align-items:center;
+    justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:24px;
+    box-shadow:0 8px 24px rgba(11,19,43,.2);
   }
-  .banner .eyebrow{font-size:11px;letter-spacing:.08em;opacity:.9;text-transform:uppercase;}
-  .banner h1{margin:2px 0 2px;font-size:22px;}
-  .banner p{margin:0;font-size:12px;opacity:.95;}
-  .banner .banner-note{font-size:10.5px;background:rgba(255,255,255,.2);padding:5px 10px;border-radius:20px;}
+  .banner .eyebrow{font-size:11px;letter-spacing:.1em;opacity:.8;text-transform:uppercase;font-weight:700;}
+  .banner h1{margin:4px 0 4px;font-size:26px; font-weight:800;}
+  .banner p{margin:0;font-size:13px;opacity:.9;}
 
   /* ---- CARDS e KPIs ---- */
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
-  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;}
-  .stat-card .ic{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:16px;}
-  .stat-card .val{font-size:20px;font-weight:700;line-height:1.1;}
-  .stat-card .lbl{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 15px rgba(0,0,0,0.02); transition: transform 0.2s;}
+  .stat-card:hover{transform: translateY(-3px); box-shadow:0 8px 25px rgba(0,0,0,0.05);}
+  .stat-card .ic{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:20px;}
+  .stat-card .val{font-size:22px;font-weight:800;line-height:1.2; color:var(--navy);}
+  .stat-card .lbl{font-size:12px;color:var(--muted);margin-top:2px; font-weight:500;}
 
-  .panels{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
-  .card h3{margin:0 0 2px;font-size:14px;}
-  .card .sub{font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:20px; margin-bottom: 20px;}
+  .panels-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:0 4px 15px rgba(0,0,0,0.02);}
+  .card h3{margin:0 0 4px;font-size:16px; color:var(--navy);}
+  .card .sub{font-size:12px;color:var(--muted);margin-bottom:18px;}
 
-  /* ---- BALANÇO ENERGÉTICO ---- */
-  .balance-chart{display:flex;align-items:flex-end;gap:6px;height:180px;padding:0 4px;margin-bottom:10px;}
-  .balance-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
-  .balance-bar-group{display:flex;gap:2px;align-items:flex-end;height:160px;}
-  .balance-bar{width:14px;border-radius:3px 3px 0 0;transition:height .4s ease;}
-  .balance-bar.geracao{background:linear-gradient(180deg,var(--yellow),var(--orange));}
-  .balance-bar.consumo{background:linear-gradient(180deg,var(--blue),#1668c2);}
-  .balance-bar.rede{background:linear-gradient(180deg,#8a94a8,#6a7386);}
-  .balance-lbl{font-size:10px;color:var(--muted);}
-  .balance-legend{display:flex;gap:16px;font-size:11px;color:var(--muted);margin-bottom:12px;flex-wrap:wrap;}
-  .balance-legend span{display:flex;align-items:center;gap:5px;}
-  .balance-legend .sw{width:10px;height:10px;border-radius:2px;}
-
-  .balance-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
-  .balance-summary .bs-item{text-align:center;}
-  .balance-summary .bs-val{font-size:16px;font-weight:700;}
-  .balance-summary .bs-lbl{font-size:10.5px;color:var(--muted);margin-top:2px;}
-  .bs-autoconsumo .bs-val{color:var(--green);}
-  .bs-injetado .bs-val{color:var(--orange-2);}
-  .bs-rede .bs-val{color:var(--blue);}
-
-  /* ---- PREVISÃO DE GERAÇÃO ---- */
+  /* ---- PREVISÃO (DASHBOARD) ---- */
   .forecast-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:16px;}
-  .forecast-day{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center;transition:transform .15s ease;cursor:pointer;}
-  .forecast-day:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(10,16,30,.08);}
+  .forecast-day{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;transition:all .2s ease;cursor:pointer;}
+  .forecast-day:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(10,16,30,.08); border-color:var(--orange);}
   .forecast-day.today{border-color:var(--orange);background:var(--orange-soft);}
-  .forecast-day .fd-date{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
-  .forecast-day .fd-icon{font-size:26px;margin:8px 0;}
-  .forecast-day .fd-temp{font-size:10px;color:var(--muted);margin-bottom:8px;}
-  .forecast-day .fd-gen{font-size:14px;font-weight:700;color:var(--orange-2);}
-  .forecast-day .fd-gen-lbl{font-size:9px;color:var(--muted);}
+  .forecast-day .fd-date{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;}
+  .forecast-day .fd-icon{font-size:32px;margin:10px 0;}
+  .forecast-day .fd-temp{font-size:11px;color:var(--muted);margin-bottom:8px;}
+  .forecast-day .fd-gen{font-size:16px;font-weight:800;color:var(--orange-2);}
+  .forecast-day .fd-gen-lbl{font-size:9px;color:var(--muted); text-transform:uppercase; font-weight:700;}
 
-  .forecast-detail{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
-  .forecast-detail h3{margin:0 0 12px;font-size:14px;}
-  .forecast-detail .fd-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);font-size:12.5px;}
-  .forecast-detail .fd-row:last-child{border-bottom:none;}
-  .forecast-detail .fd-row b{color:var(--orange-2);}
-
-  /* ---- PREVISÃO DE CONSUMO ---- */
-  .projection-card{background:linear-gradient(135deg,#fff,#fefbf5);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px;}
-  .projection-card .proj-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-  .projection-card .proj-title{font-size:14px;font-weight:700;}
-  .projection-card .proj-period{font-size:11px;color:var(--muted);}
-  .projection-card .proj-main{font-size:32px;font-weight:800;color:var(--orange-2);line-height:1;}
-  .projection-card .proj-main-lbl{font-size:11.5px;color:var(--muted);margin-top:4px;}
-  .projection-card .proj-margin{font-size:10.5px;background:var(--green-soft);color:var(--green);padding:3px 8px;border-radius:10px;font-weight:700;display:inline-block;margin-top:6px;}
-  .projection-card .proj-breakdown{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
-  .projection-card .pb-item{font-size:11px;}
-  .projection-card .pb-item b{display:block;font-size:13px;color:var(--ink);margin-bottom:2px;}
-  .projection-card .pb-item span{color:var(--muted);}
-
-  /* ---- ALERTAS ---- */
-  .issue-card{background:#fff;border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:8px;padding:14px 16px;margin-bottom:12px;}
+  /* ---- AVISOS (MISSION CONTROL) ---- */
+  .status-header{display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;}
+  .status-box{background:#fff; border-radius:12px; padding:20px; display:flex; align-items:center; gap:16px; border-left:6px solid var(--green); box-shadow:0 4px 15px rgba(0,0,0,0.03);}
+  .status-box.critico{border-left-color:var(--red); animation: pulse-border 2s infinite;}
+  @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(217, 83, 79, 0); } 100% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0); } }
+  .status-box .sb-icon{width:50px; height:50px; border-radius:50%; background:var(--green-soft); color:var(--green); display:flex; align-items:center; justify-content:center; font-size:24px;}
+  .status-box.critico .sb-icon{background:var(--red-soft); color:var(--red); animation: blink 1s infinite;}
+  @keyframes blink { 50% { opacity: 0.5; } }
+  
+  .issue-card{background:#fff;border:1px solid var(--border);border-left:6px solid var(--muted);border-radius:12px;padding:20px;margin-bottom:16px; box-shadow:0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s;}
+  .issue-card:hover{transform: translateX(5px);}
   .issue-card.sev-critico{border-left-color:var(--red);}
   .issue-card.sev-atencao{border-left-color:var(--orange);}
   .issue-card.sev-normal{border-left-color:var(--green);}
-  .issue-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
-  .issue-top .it-title{font-size:13.5px;font-weight:700;}
-  .issue-top .it-meta{font-size:11px;color:var(--muted);margin-top:2px;}
-  .sev-badge{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .issue-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .issue-top .it-title{font-size:16px;font-weight:800; color:var(--navy); display:flex; align-items:center; gap:8px;}
+  .sev-badge{font-size:10px;font-weight:800;padding:4px 12px;border-radius:20px;white-space:nowrap; text-transform:uppercase; letter-spacing:0.5px;}
   .sev-badge.sev-critico{background:var(--red-soft);color:#b03530;}
   .sev-badge.sev-atencao{background:var(--orange-soft);color:#b5680d;}
   .sev-badge.sev-normal{background:var(--green-soft);color:#218a45;}
-  .issue-block{font-size:12px;line-height:1.55;margin-bottom:6px;}
-  .issue-block b{color:var(--orange-2);}
-  .issue-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .issue-block{font-size:13px;line-height:1.6;margin-bottom:8px; color:#3b4358;}
+  .issue-block b{color:var(--navy); font-weight:700;}
 
-  /* ---- DICAS DE ECONOMIA ---- */
-  .tip-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start;transition:transform .15s ease;}
-  .tip-card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(10,16,30,.06);}
-  .tip-card .tip-icon{width:44px;height:44px;border-radius:10px;background:var(--orange-soft);color:var(--orange-2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
-  .tip-card .tip-content{flex:1;min-width:0;}
-  .tip-card .tip-title{font-size:14px;font-weight:700;margin-bottom:4px;}
-  .tip-card .tip-desc{font-size:12.5px;color:#3b4358;line-height:1.5;margin-bottom:8px;}
-  .tip-card .tip-saving{display:inline-block;font-size:11px;background:var(--green-soft);color:var(--green);padding:4px 10px;border-radius:20px;font-weight:700;}
-
-  /* ---- SIMULADOR ---- */
-  .sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  .sim-result{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px 20px;}
-  .sim-result h3{margin:0 0 12px;font-size:14px;}
+  /* ---- DICAS DE ECONOMIA (GRID) ---- */
+  .tips-grid{display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px;}
+  .tip-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 4px 15px rgba(0,0,0,0.03); transition:all 0.3s;}
+  .tip-card:hover{transform:translateY(-5px);box-shadow:0 10px 25px rgba(0,0,0,0.08); border-color:var(--orange);}
+  .tip-icon-wrap{width:56px;height:56px;border-radius:14px;background:var(--orange-soft);color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .tip-title{font-size:16px;font-weight:800; color:var(--navy);}
+  .tip-desc{font-size:13px;color:#3b4358;line-height:1.6; flex:1;}
+  .tip-saving{display:inline-flex; align-items:center; gap:6px; font-size:12px;background:var(--green-soft);color:var(--green);padding:6px 12px;border-radius:20px;font-weight:800; align-self:flex-start;}
 
   /* ---- FORMULÁRIOS ---- */
-  .filter-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:18px;}
-  .filter-card .fc-head{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--orange-2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.03em;}
-  .filter-grid{display:grid;grid-template-columns:1.3fr 1.3fr 1fr 1fr;gap:14px;align-items:end;}
-  .filter-grid.cols-5{grid-template-columns:1fr 1fr 1fr 1fr 1fr;}
+  .filter-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.02);}
+  .filter-card .fc-head{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;color:var(--navy);margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em;}
+  .filter-grid{display:grid;grid-template-columns:1.5fr 1.5fr 1fr 1fr;gap:16px;align-items:end;}
   .filter-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
-  .field-group label{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:5px;}
-  .field-group input,.field-group select,.field-group textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--ink);font-family:inherit;background:#fff;}
-  .field-group input:focus,.field-group select:focus{outline:2px solid var(--orange);outline-offset:1px;border-color:var(--orange);}
-  .btn-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
-  .btn{border:none;border-radius:6px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;transition:opacity .15s ease,transform .15s ease;}
-  .btn:hover{opacity:.92;}
+  .field-group label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px; font-weight:700;}
+  .field-group input,.field-group select,.field-group textarea{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;color:var(--ink);font-family:inherit;background:#fafbfc; transition:border 0.2s;}
+  .field-group input:focus,.field-group select:focus{outline:none; border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px var(--blue-soft);}
+  .btn-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;}
+  .btn{border:none;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;transition:all .2s ease;}
+  .btn:hover{transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.1);}
   .btn-orange{background:var(--orange);color:#fff;}
-  .btn-orange:hover{background:var(--orange-2);}
   .btn-blue{background:var(--blue);color:#fff;}
   .btn-green{background:var(--green);color:#fff;}
   .btn-red{background:var(--red);color:#fff;}
-  .btn-outline{background:#fff;color:var(--orange-2);border:1px solid var(--orange);}
-  .btn-sm{padding:6px 11px;font-size:11.5px;}
+  .btn-outline{background:#fff;color:var(--blue);border:2px solid var(--blue);}
+  .btn-outline:hover{background:var(--blue-soft);}
 
   /* ---- TABELAS ---- */
-  .table-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-  .table-card .tc-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
-  .table-card .tc-head h3{margin:0;font-size:14px;}
-  .table-card .tc-head .count{font-size:11.5px;color:var(--muted);}
-  table{width:100%;border-collapse:collapse;font-size:12.5px;}
-  thead th{text-align:left;padding:10px 18px;background:#faf8f3;color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border);}
-  tbody td{padding:11px 18px;border-bottom:1px solid var(--border);color:var(--ink);}
-  tbody tr:last-child td{border-bottom:none;}
-  tbody tr:hover{background:#fdfaf4;}
-  .status-pill{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;}
-  .status-ok{background:var(--green-soft);color:#218a45;}
-  .status-pending{background:var(--orange-soft);color:#b5680d;}
-  .status-error{background:var(--red-soft);color:#b03530;}
-  .row-actions{display:flex;gap:8px;}
-  .icon-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;}
-  .icon-btn:hover{background:var(--orange-soft);border-color:var(--orange);}
+  .table-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.02);}
+  .table-card .tc-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);}
+  .table-card .tc-head h3{margin:0;font-size:16px; color:var(--navy);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;padding:14px 24px;background:#f8fafc;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border); font-weight:800;}
+  tbody td{padding:16px 24px;border-bottom:1px solid var(--border);color:var(--ink);}
+  tbody tr:hover{background:#fafbfc;}
+  .status-pill{display:inline-block;font-size:11px;font-weight:800;padding:5px 12px;border-radius:20px;}
+  .status-ok{background:var(--green-soft);color:var(--green);}
+  .status-pending{background:var(--orange-soft);color:var(--orange-2);}
+  .status-error{background:var(--red-soft);color:var(--red);}
+  .icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:14px; color:var(--muted); transition:all 0.2s;}
+  .icon-btn:hover{background:var(--blue-soft);color:var(--blue);border-color:var(--blue);}
 
-  /* ---- AI PANEL ---- */
-  .overlay{position:fixed;inset:0;background:rgba(10,16,30,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:40;}
+  /* ---- MINHA CONTA ---- */
+  .profile-header{display:flex; align-items:center; gap:20px; margin-bottom:30px; background:#fff; padding:24px; border-radius:14px; border:1px solid var(--border); box-shadow:0 4px 15px rgba(0,0,0,0.02);}
+  .profile-avatar-large{width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--orange), var(--orange-2)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:800; border:4px solid #fff; box-shadow:0 4px 15px rgba(244,165,49,0.3);}
+  .profile-info h2{margin:0 0 4px; font-size:22px; color:var(--navy);}
+  .profile-info p{margin:0; font-size:13px; color:var(--muted); display:flex; align-items:center; gap:6px;}
+  
+  .docs-grid{display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:20px;}
+  .doc-card{background:#fff; border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; flex-direction:column; align-items:center; text-align:center; transition:all 0.2s; cursor:pointer;}
+  .doc-card:hover{border-color:var(--blue); box-shadow:0 8px 20px rgba(31,127,224,0.1); transform:translateY(-3px);}
+  .doc-icon{width:60px; height:60px; border-radius:12px; background:var(--red-soft); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:16px;}
+  .doc-title{font-size:14px; font-weight:700; color:var(--navy); margin-bottom:4px;}
+  .doc-meta{font-size:11px; color:var(--muted); margin-bottom:16px;}
+
+  .community-badge{display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:30px; background:linear-gradient(135deg, var(--yellow), var(--orange)); color:#fff; font-weight:800; font-size:14px; margin-bottom:20px; box-shadow:0 4px 15px rgba(244,165,49,0.4);}
+  .progress-bar-wrap{background:#f0f3f8; height:12px; border-radius:10px; overflow:hidden; margin-top:10px;}
+  .progress-bar{height:100%; border-radius:10px; background:linear-gradient(90deg, var(--green), var(--cyan));}
+
+  /* ---- MAPA ---- */
+  #mapaMonitoramento{height: 600px; width: 100%; border-radius: 14px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.05); z-index: 1;}
+  .map-legend{position: absolute; bottom: 20px; left: 20px; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); padding: 15px; border-radius: 10px; z-index: 400; font-size: 12px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.1);}
+  .map-legend-item{display: flex; align-items: center; gap: 8px; margin-bottom: 8px;}
+  .map-dot{width: 12px; height: 12px; border-radius: 50%; display: inline-block;}
+  
+  /* ---- ASSISTENTE (AI PANEL) ---- */
+  .overlay{position:fixed;inset:0;background:rgba(11,19,43,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:1050;}
   .overlay.open{opacity:1;pointer-events:auto;}
-  .ai-panel{position:fixed;top:0;right:-460px;height:100vh;width:440px;max-width:94vw;background:#fbfcfe;border-left:1px solid var(--border);z-index:50;display:flex;flex-direction:column;transition:right .25s ease;box-shadow:-8px 0 30px rgba(10,16,30,.15);}
+  .ai-panel{position:fixed;top:0;right:-480px;height:100vh;width:460px;max-width:94vw;background:#fff;border-left:1px solid var(--border);z-index:1100;display:flex;flex-direction:column;transition:right .3s cubic-bezier(0.4, 0, 0.2, 1);box-shadow:-10px 0 40px rgba(10,16,30,.2);}
   .ai-panel.open{right:0;}
-  .ai-head{background:linear-gradient(120deg,var(--orange),var(--orange-2));color:#fff;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-  .ai-head .title{display:flex;align-items:center;gap:10px;}
-  .ai-head .title .ic{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:15px;}
-  .ai-head b{font-size:14.5px;display:block;}
-  .ai-head span{font-size:11px;opacity:.9;}
-  .close-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;line-height:1;}
-  .ai-body{padding:16px 18px;overflow-y:auto;flex:1;}
-  .section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:8px 0 8px;font-weight:700;}
-  .chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
-  .chip{font-size:11px;background:var(--orange-soft);color:var(--orange-2);border:1px solid #f5d9a8;border-radius:20px;padding:6px 11px;cursor:pointer;font-family:inherit;}
-  .chip:hover{background:#ffe9c9;}
-  .ai-chat-log{margin-top:4px;display:flex;flex-direction:column;gap:8px;}
-  .chat-msg{font-size:12.5px;line-height:1.55;padding:9px 12px;border-radius:8px;max-width:94%;}
-  .chat-msg.user{align-self:flex-end;background:var(--orange);color:#fff;}
-  .chat-msg.ai{align-self:flex-start;background:#eef2f7;color:var(--ink);}
-  .chat-msg.ai b{color:var(--orange-2);}
-  .ai-input-bar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 14px;border-top:1px solid var(--border);background:#fff;}
-  .ai-input-bar textarea{flex:1;border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-family:inherit;font-size:12.5px;resize:none;min-height:20px;max-height:100px;line-height:1.4;outline:none;}
-  .ai-input-bar textarea:focus{border-color:var(--orange);}
-  .ai-send-btn{flex-shrink:0;width:38px;height:38px;border-radius:50%;border:none;background:var(--orange);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-  .ai-footer{padding:12px 18px;border-top:1px solid var(--border);font-size:10.5px;color:var(--muted);flex-shrink:0;}
+  .ai-head{background:linear-gradient(120deg,var(--navy),var(--blue));color:#fff;padding:20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .ai-head .title{display:flex;align-items:center;gap:12px;}
+  .ai-head .title .ic{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .ai-head b{font-size:16px;display:block;}
+  .ai-head span{font-size:12px;opacity:.8;}
+  .close-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1; transition:background 0.2s;}
+  .close-btn:hover{background:rgba(255,255,255,.3);}
+  .ai-body{padding:20px;overflow-y:auto;flex:1; background:#f8fafc;}
+  .section-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:10px 0;font-weight:800;}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+  .chip{font-size:12px;background:#fff;color:var(--navy);border:1px solid var(--border);border-radius:20px;padding:8px 14px;cursor:pointer;font-family:inherit; font-weight:600; transition:all 0.2s;}
+  .chip:hover{background:var(--blue-soft);border-color:var(--blue); color:var(--blue);}
+  .ai-chat-log{display:flex;flex-direction:column;gap:12px;}
+  .chat-msg{font-size:13px;line-height:1.6;padding:12px 16px;border-radius:12px;max-width:90%; box-shadow:0 2px 5px rgba(0,0,0,0.05);}
+  .chat-msg.user{align-self:flex-end;background:var(--blue);color:#fff; border-bottom-right-radius:2px;}
+  .chat-msg.ai{align-self:flex-start;background:#fff;color:var(--ink); border-bottom-left-radius:2px; border:1px solid var(--border);}
+  .chat-msg.ai b{color:var(--blue);}
+  .ai-input-bar{flex-shrink:0;display:flex;gap:10px;align-items:flex-end;padding:16px;border-top:1px solid var(--border);background:#fff;}
+  .ai-input-bar textarea{flex:1;border:1px solid var(--border);border-radius:20px;padding:12px 18px;font-family:inherit;font-size:13px;resize:none;min-height:24px;max-height:120px;line-height:1.4;outline:none; background:#f8fafc; transition:border 0.2s;}
+  .ai-input-bar textarea:focus{border-color:var(--blue); background:#fff;}
+  .ai-send-btn{flex-shrink:0;width:44px;height:44px;border-radius:50%;border:none;background:var(--blue);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center; transition:transform 0.2s;}
+  .ai-send-btn:hover{transform:scale(1.05);}
 
-  /* ---- TOAST ---- */
-  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;font-size:12.5px;opacity:0;pointer-events:none;transition:all .25s ease;z-index:100;max-width:80vw;text-align:center;}
+  /* ---- MODAL & TOAST ---- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(11,19,43,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:2000;padding:20px;}
+  .modal-overlay.open{display:flex; animation:fadeIn 0.2s;}
+  .modal{background:#fff;border-radius:16px;width:600px;max-width:95vw;padding:30px;max-height:90vh;overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.2);}
+  .modal h3{margin:0 0 8px;font-size:20px; color:var(--navy);}
+  .modal p.sub{margin:0 0 24px;font-size:13px;color:var(--muted);}
+  .modal-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:24px; padding-top:20px; border-top:1px solid var(--border);}
+  
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:14px 24px;border-radius:30px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s cubic-bezier(0.4, 0, 0.2, 1);z-index:3000; box-shadow:0 10px 30px rgba(0,0,0,0.2); display:flex; align-items:center; gap:10px;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast i{color:var(--green); font-size:16px;}
 
-  /* ---- HAMBURGER ---- */
-  .hamburger{display:none;width:34px;height:34px;border:none;background:var(--orange-soft);color:var(--orange-2);border-radius:6px;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;margin-right:4px;}
-  .sidebar-overlay{position:fixed;inset:0;background:rgba(10,16,30,.42);z-index:65;opacity:0;pointer-events:none;transition:opacity .2s ease;}
-  .sidebar-overlay.open{opacity:1;pointer-events:auto;}
-
-  @media (max-width:900px){
-    .stats{grid-template-columns:repeat(2,1fr);}
-    .panels{grid-template-columns:1fr;}
-    .filter-grid,.filter-grid.cols-5,.filter-grid.cols-3{grid-template-columns:1fr 1fr;}
-    .forecast-grid{grid-template-columns:repeat(3,1fr);}
-    .sim-grid,.balance-summary,.projection-card .proj-breakdown{grid-template-columns:1fr;}
+    /* ---- MAPA TECNOLÓGICO ---- */
+  .leaflet-container {
+      background: #0f172a !important; /* Fundo escuro do mapa */
+      border-radius: 14px;
   }
-  @media (max-width:640px){
-    .hamburger{display:flex;}
+  .map-tiles {
+      /* Filtro CSS que transforma o mapa claro em um mapa escuro estilo "hacker" */
+      filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  }
+  .marker-pin {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+  }
+  .marker-pin.online {
+      background-color: #2fae5e;
+      box-shadow: 0 0 15px #2fae5e;
+  }
+  .marker-pin.offline {
+      background-color: #d9534f;
+      box-shadow: 0 0 15px #d9534f;
+      animation: pulse-red 2s infinite;
+  }
+  @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(217, 83, 79, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0); }
+  }
+  .leaflet-popup-content-wrapper {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(10px);
+      border-radius: 12px !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3) !important;
+  }
+
+  @media (max-width: 900px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .panels,.panels-3{grid-template-columns:1fr;}
+    .filter-grid,.filter-grid.cols-3{grid-template-columns:1fr 1fr;}
+    .forecast-grid{grid-template-columns:repeat(3,1fr);}
+  }
+  @media (max-width: 640px){
     .sidebar{position:fixed;top:0;bottom:0;left:0;width:260px;max-width:84vw;z-index:9999;transform:translateX(-100%);transition:transform .25s ease;box-shadow:4px 0 24px rgba(0,0,0,.25);}
     .sidebar.open{transform:translateX(0);}
-    .sidebar-overlay{z-index:9998;}
-    .topbar{padding:10px 12px;gap:8px;}
-    .topbar .crumbs{font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
-    .user-chip{font-size:11px;gap:6px;flex-shrink:0;}
-    .user-chip .avatar{width:22px;height:22px;font-size:10px;}
-    .content{padding:14px 14px 30px;}
-    .banner{padding:14px 16px;}
-    .banner h1{font-size:17px;}
+    .topbar{padding:10px 15px;}
+    .topbar .crumbs{display:none;}
+    .content{padding:16px 16px 30px;}
     .stats{grid-template-columns:1fr 1fr;gap:10px;}
-    .stat-card{padding:12px;}
-    .filter-grid,.filter-grid.cols-5,.filter-grid.cols-3{grid-template-columns:1fr;}
+    .filter-grid,.filter-grid.cols-3{grid-template-columns:1fr;}
     .forecast-grid{grid-template-columns:repeat(2,1fr);}
-    .table-card{overflow-x:auto;}
-    .table-card table{min-width:600px;}
-    .ai-panel{width:100%;max-width:100%;right:-100%;}
+    .ai-panel{width:100%;}
   }
 </style>
 </head>
@@ -284,266 +322,250 @@
 
 <!-- TELA DE LOGIN -->
 <div id="telaLogin" style="position:fixed; inset:0; z-index:9999; background:var(--navy); display:flex; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#fff; border-radius:16px; padding:40px 30px; width:100%; max-width:400px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-    <img src="/static/logo.png" alt="Kivora" style="width:80px; height:80px; border-radius:50%; object-fit:cover; object-position:center 25%; margin-bottom:15px; border:3px solid var(--orange);">
-    <h2 style="margin:0 0 5px; font-size:24px; color:var(--navy);">Bem-vindo à Kivora</h2>
-    <p style="margin:0 0 25px; font-size:13px; color:var(--muted);">Energia Inteligente para um Amanhã Melhor</p>
+  <div style="background:#fff; border-radius:20px; padding:50px 40px; width:100%; max-width:420px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <img src="https://raw.githubusercontent.com/ygoryy0/sollar-cloud/main/logo.png" alt="Kivora" style="width:80px; height:80px; border-radius:50%; object-fit:cover; object-position:center 25%; margin-bottom:15px; border:3px solid var(--orange);">
+    <h2 style="margin:0 0 5px; font-size:26px; color:var(--navy); font-weight:800;">Bem-vindo à Kivora</h2>
+    <p style="margin:0 0 30px; font-size:14px; color:var(--muted);">Energia Inteligente para um Amanhã Melhor</p>
 
-    <div style="text-align:left; margin-bottom:15px;">
-      <label style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">E-mail</label>
-      <input type="email" id="loginEmail" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px; outline:none;">
+    <div style="text-align:left; margin-bottom:18px;">
+      <label style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;">E-mail</label>
+      <input type="email" id="loginEmail" style="width:100%; padding:14px; border:1px solid var(--border); border-radius:10px; margin-top:6px; font-size:14px; outline:none; background:#f8fafc; transition:all 0.2s;">
     </div>
     
-    <div style="text-align:left; margin-bottom:25px;">
-      <label style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Senha</label>
-      <input type="password" id="loginSenha" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px; outline:none;">
+    <div style="text-align:left; margin-bottom:30px;">
+      <label style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;">Senha</label>
+      <input type="password" id="loginSenha" style="width:100%; padding:14px; border:1px solid var(--border); border-radius:10px; margin-top:6px; font-size:14px; outline:none; background:#f8fafc; transition:all 0.2s;">
     </div>
 
-    <div id="loginErro" style="color:var(--red); font-size:12px; font-weight:600; margin-bottom:15px; display:none;"></div>
+    <div id="loginErro" style="color:var(--red); font-size:13px; font-weight:700; margin-bottom:20px; display:none; background:var(--red-soft); padding:10px; border-radius:8px;"></div>
 
-    <button onclick="fazerLogin()" id="btnLogin" style="width:100%; padding:14px; background:var(--orange); color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; transition:background 0.2s;">
+    <button onclick="fazerLogin()" id="btnLogin" style="width:100%; padding:16px; background:linear-gradient(135deg, var(--orange), var(--orange-2)); color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:800; cursor:pointer; transition:transform 0.2s; box-shadow:0 6px 20px rgba(244,165,49,0.3);">
       Entrar no Sistema
     </button>
 
-    <div style="margin-top: 15px; font-size: 13px;">
-      Não tem uma conta? <a href="#" onclick="mostrarCadastro()" style="color: var(--orange); font-weight: bold; text-decoration: none;">Cadastre-se aqui</a>
+    <div style="margin-top: 20px; font-size: 14px;">
+      Não tem uma conta? <a href="#" onclick="mostrarCadastro()" style="color: var(--orange-2); font-weight: 800; text-decoration: none;">Cadastre-se aqui</a>
     </div>
   </div>
 </div>
 
-<!-- TELA DE CADASTRO DE CLIENTE -->
+<!-- TELA DE CADASTRO -->
 <div id="telaCadastro" style="position:fixed; inset:0; z-index:9998; background:var(--navy); display:none; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:#fff; border-radius:16px; padding:40px 30px; width:100%; max-width:400px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-    <h2 style="margin:0 0 5px; font-size:24px; color:var(--navy);">Criar Conta</h2>
-    <p style="margin:0 0 20px; font-size:13px; color:var(--muted);">Junte-se à Kivora</p>
+  <div style="background:#fff; border-radius:20px; padding:50px 40px; width:100%; max-width:420px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+    <h2 style="margin:0 0 5px; font-size:26px; color:var(--navy); font-weight:800;">Criar Conta</h2>
+    <p style="margin:0 0 25px; font-size:14px; color:var(--muted);">Junte-se à Kivora</p>
 
-    <div style="text-align:left; margin-bottom:12px;">
-      <label style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Seu Nome</label>
-      <input type="text" id="cadNome" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px;" placeholder="Ex: João da Silva">
+    <div style="text-align:left; margin-bottom:14px;">
+      <label style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;">Seu Nome</label>
+      <input type="text" id="cadNome" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px; background:#f8fafc;">
     </div>
 
-    <div style="text-align:left; margin-bottom:12px;">
-      <label style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">E-mail</label>
-      <input type="email" id="cadEmail" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px;" placeholder="joao@email.com">
+    <div style="text-align:left; margin-bottom:14px;">
+      <label style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;">E-mail</label>
+      <input type="email" id="cadEmail" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px; background:#f8fafc;">
     </div>
 
-    <div style="text-align:left; margin-bottom:12px;">
-      <label style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Senha</label>
-      <input type="password" id="cadSenha" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px;" placeholder="********">
+    <div style="text-align:left; margin-bottom:14px;">
+      <label style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;">Senha</label>
+      <input type="password" id="cadSenha" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px; background:#f8fafc;">
     </div>
 
-    <div style="text-align:left; margin-bottom:20px;">
-      <label style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">CEP da sua casa</label>
-      <input type="text" id="cadCep" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px;" placeholder="00000-000">
+    <div style="text-align:left; margin-bottom:25px;">
+      <label style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;">CEP da sua casa</label>
+      <input type="text" id="cadCep" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; margin-top:5px; font-size:14px; background:#f8fafc;">
     </div>
 
-    <div id="cadErro" style="color:var(--red); font-size:12px; font-weight:600; margin-bottom:15px; display:none;"></div>
+    <div id="cadErro" style="color:var(--red); font-size:13px; font-weight:700; margin-bottom:20px; display:none; background:var(--red-soft); padding:10px; border-radius:8px;"></div>
 
-    <button onclick="fazerCadastro()" id="btnCadastrar" style="width:100%; padding:14px; background:var(--orange); color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer;">
+    <button onclick="fazerCadastro()" id="btnCadastrar" style="width:100%; padding:16px; background:linear-gradient(135deg, var(--orange), var(--orange-2)); color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:800; cursor:pointer; box-shadow:0 6px 20px rgba(244,165,49,0.3);">
       Criar minha conta
     </button>
     
-    <div style="margin-top: 15px; font-size: 13px;">
-      Já tem conta? <a href="#" onclick="mostrarLogin()" style="color: var(--orange); font-weight: bold; text-decoration: none;">Faça login</a>
+    <div style="margin-top: 20px; font-size: 14px;">
+      Já tem conta? <a href="#" onclick="mostrarLogin()" style="color: var(--orange-2); font-weight: 800; text-decoration: none;">Faça login</a>
     </div>
   </div>
 </div>
 
+<!-- APP PRINCIPAL -->
 <div class="app" id="appPrincipal" style="display:none;">
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
-
   <!-- SIDEBAR -->
   <div class="sidebar" id="sidebarEl">
     <div class="brand">
-      <img src="/static/logo.png" alt="Kivora">
+     <img src="https://raw.githubusercontent.com/ygoryy0/sollar-cloud/main/logo.png" alt="Kivora" style="height:40px; width:40px; border-radius:50%; object-fit:cover; object-position:center 25%; border: 2px solid var(--orange);">
       <span><b>KIVORA</b></span>
     </div>
-    <div class="search">🔍 Buscar</div>
+    
+    <div class="search"><i class="fa-solid fa-magnifying-glass"></i> Buscar...</div>
+    
     <div class="nav">
-      <div class="nav-section">Minha Conta</div>
-      <button class="nav-item" data-view="conta" onclick="showView('conta',this)"><span class="dot"></span> Meus Dados</button>
-      <button class="nav-item" data-view="faturas" onclick="showView('faturas',this)"><span class="dot"></span> Histórico de Faturas</button>
-      <button class="nav-item" data-view="documentos" onclick="showView('documentos',this)"><span class="dot"></span> Documentos</button>
-      <button class="nav-item" data-view="comunidade" onclick="showView('comunidade',this)"><span class="dot"></span> Comunidade</button>
-
       <div class="nav-section">Visão Geral</div>
-      <button class="nav-item active" data-view="dashboard" onclick="showView('dashboard',this)"><span class="dot"></span> Visão Geral</button>
-      <button class="nav-item" data-view="balanco" onclick="showView('balanco',this)"><span class="dot"></span> Balanço Energético</button>
-      <button class="nav-item" data-view="previsao" onclick="showView('previsao',this)"><span class="dot"></span> Previsão de Geração</button>
-      <button class="nav-item" data-view="relatorio" onclick="showView('relatorio',this)"><span class="dot"></span> Relatórios</button>
+      <button class="nav-item active" data-view="dashboard" onclick="showView('dashboard',this)"><i class="fa-solid fa-chart-pie"></i> Visão Geral</button>
+      <button class="nav-item" data-view="balanco" onclick="showView('balanco',this)"><i class="fa-solid fa-scale-balanced"></i> Balanço Energético</button>
+      <button class="nav-item" data-view="previsao" onclick="showView('previsao',this)"><i class="fa-solid fa-cloud-sun"></i> Previsão de Geração</button>
+      <button class="nav-item" data-view="mapa" onclick="showView('mapa',this)"><i class="fa-solid fa-map-location-dot"></i> Mapa de Monitoramento</button>
 
-      <!-- ÁREA DO ADMIN MASTER -->
-      <div id="menuAdmin" style="display: none;">
-        <div class="nav-section">Admin Master 👑</div>
-        <button class="nav-item" data-view="gerenciar-empresas" onclick="showView('gerenciar-empresas',this)"><span class="dot"></span> Gerenciar Empresas</button>
-      </div>
+      <div class="nav-section">Minha Conta</div>
+      <button class="nav-item" data-view="conta" onclick="showView('conta',this)"><i class="fa-solid fa-user-gear"></i> Meus Dados</button>
+      <button class="nav-item" data-view="faturas" onclick="showView('faturas',this)"><i class="fa-solid fa-file-invoice-dollar"></i> Histórico de Faturas</button>
+      <button class="nav-item" data-view="documentos" onclick="showView('documentos',this)"><i class="fa-solid fa-folder-open"></i> Documentos</button>
+      <button class="nav-item" data-view="comunidade" onclick="showView('comunidade',this)"><i class="fa-solid fa-users"></i> Comunidade</button>
 
       <div class="nav-section">Inteligência</div>
-      <button class="nav-item" data-view="dicas" onclick="showView('dicas',this)"><span class="dot"></span> Dicas de Economia</button>
-      <button class="nav-item" data-view="avisos" onclick="showView('avisos',this)"><span class="dot"></span> Avisos <span class="nbadge" id="navAlertBadge">0</span></button>
-      <button class="nav-item" data-view="simulador" onclick="showView('simulador',this)"><span class="dot"></span> Simulador Real 🌍</button>
-      <button class="nav-item" data-view="config" onclick="showView('config',this)"><span class="dot"></span> Configurações</button>
+      <button class="nav-item" data-view="relatorio" onclick="showView('relatorio',this)"><i class="fa-solid fa-file-pdf"></i> Relatórios</button>
+      <button class="nav-item" data-view="dicas" onclick="showView('dicas',this)"><i class="fa-solid fa-lightbulb"></i> Dicas de Economia</button>
+      <button class="nav-item" data-view="avisos" onclick="showView('avisos',this)"><i class="fa-solid fa-triangle-exclamation"></i> Avisos <span class="nbadge" id="navAlertBadge">0</span></button>
+      <button class="nav-item" data-view="simulador" onclick="showView('simulador',this)"><i class="fa-solid fa-calculator"></i> Simulador Real</button>
+      <button class="nav-item" data-view="config" onclick="showView('config',this)"><i class="fa-solid fa-gear"></i> Configurações</button>
+
+      <!-- ADMIN MASTER -->
+      <div id="menuAdmin" style="display: none;">
+        <div class="nav-section">Admin Master 👑</div>
+        <button class="nav-item" data-view="gerenciar-empresas" onclick="showView('gerenciar-empresas',this)"><i class="fa-solid fa-building"></i> Gerenciar Empresas</button>
+      </div>
     </div>
 
     <button class="ai-launcher" onclick="toggleAI(true)">
-      <span class="ico">✨</span>
+      <span class="ico"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
       <span>
         <b>Assistente Kivora</b>
-        <span>Energia Inteligente para um Amanhã Melhor</span>
+        <span>Seu consultor de energia</span>
       </span>
     </button>
   </div>
 
   <!-- MAIN -->
   <div class="main">
+    <!-- TOPBAR -->
     <div class="topbar">
-      <button class="hamburger" onclick="toggleSidebar()" aria-label="Abrir menu">☰</button>
-      <div class="crumbs">Kivora / <b id="crumbCurrent">Visão Geral</b></div>
-      <div class="user-chip"><div class="avatar">M</div> <span id="topUserName">Maria Silva</span> <button onclick="sair()" style="margin-left:10px; font-size:10px; padding:3px 8px; border:none; background:var(--border); border-radius:4px; cursor:pointer;">Sair</button></div>
+      <div class="crumbs">
+        <i class="fa-solid fa-house"></i> Kivora <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i> <b id="crumbCurrent">Visão Geral</b>
+      </div>
+      <div class="user-chip">
+        <div class="user-profile">
+          <div class="avatar" id="topUserAvatar">U</div>
+          <div class="user-info">
+            <span id="topUserName">Usuário</span>
+            <small id="topUserRole">Cliente</small>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="sair()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+      </div>
     </div>
 
     <div class="content">
-
-      <!-- ===== TELA DO ADMIN MASTER ===== -->
-      <div class="view" id="view-gerenciar-empresas">
-        <div class="banner" style="background:linear-gradient(120deg,#1C2541,var(--navy));">
-          <div>
-            <div class="eyebrow">ADMINISTRAÇÃO</div>
-            <h1>Gerenciar Empresas</h1>
-            <p>Cadastre novos clientes corporativos na plataforma.</p>
-          </div>
-        </div>
-
-        <div class="filter-card">
-          <div class="fc-head">🏢 Cadastrar Nova Empresa</div>
-          <div class="filter-grid cols-3">
-            <div class="field-group"><label>Nome da Empresa</label><input type="text" id="empNome" placeholder="Ex: SolarTech Ltda"></div>
-            <div class="field-group"><label>CNPJ</label><input type="text" id="empCnpj" placeholder="00.000.000/0000-00"></div>
-            <div class="field-group"><label>E-mail do Gestor</label><input type="email" id="empEmail" placeholder="gestor@empresa.com"></div>
-          </div>
-          <div class="filter-grid cols-3" style="margin-top:14px;">
-            <div class="field-group"><label>Senha Inicial</label><input type="password" id="empSenha" placeholder="********"></div>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-orange" onclick="cadastrarNovaEmpresa()" id="btnCadastrarEmpresa" style="width:100%; justify-content:center;">Cadastrar Empresa</button>
-          </div>
-          <div id="empErro" style="color:var(--red); font-size:12px; font-weight:600; margin-top:10px; display:none;"></div>
-          <div id="empSucesso" style="color:var(--green); font-size:12px; font-weight:600; margin-top:10px; display:none;"></div>
-        </div>
-
-        <div class="table-card" style="margin-top: 20px;">
-          <div class="tc-head"><h3>Empresas Cadastradas</h3><span class="count" id="countEmpresas">0 empresas</span></div>
-          <table>
-            <thead><tr><th>Nome da Empresa</th><th>CNPJ</th><th>Data de Cadastro</th></tr></thead>
-            <tbody id="tabelaEmpresas">
-              <tr><td colspan="3" style="text-align:center;">Carregando...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
       <!-- ===== VISÃO GERAL ===== -->
       <div class="view active" id="view-dashboard">
         <div class="banner">
           <div>
             <div class="eyebrow">VISÃO GERAL</div>
-            <h1>Bom dia, <span id="dashUserName">Maria</span> ☀️</h1>
-            <p>Seu sistema solar está gerando bem hoje. Veja o resumo do seu mês:</p>
+            <h1>Bom dia, <span id="dashUserName">Usuário</span> ☀️</h1>
+            <p>Aqui está o resumo do seu sistema solar hoje.</p>
           </div>
-          <div class="banner-note">Atualizado agora · dados conectados</div>
+          <div style="font-size:11px; background:rgba(255,255,255,0.15); padding:8px 14px; border-radius:20px;"><i class="fa-solid fa-rotate"></i> Atualizado agora</div>
         </div>
 
         <div class="stats" id="dashStats"></div>
 
-        <div class="panels" style="margin-bottom:16px;">
+        <div class="panels">
           <div class="card">
-            <h3>Previsão de geração — próximos 7 dias</h3>
-            <div class="sub">Baseada em previsão do tempo e nas características do seu sistema</div>
+            <h3>Previsão de Geração — Próximos 7 dias</h3>
+            <div class="sub">Baseada na meteorologia da sua região</div>
             <div class="forecast-grid" id="dashForecastPreview"></div>
-            <div style="text-align:right;margin-top:4px;">
-              <button class="btn btn-outline btn-sm" onclick="showView('previsao')">Ver previsão completa →</button>
-            </div>
           </div>
-          <div class="card" id="dashAlertsCard">
-            <h3>Avisos importantes</h3>
-            <div class="sub">Situações que merecem sua atenção</div>
+          <div class="card">
+            <h3>Avisos Recentes</h3>
+            <div class="sub">O que precisa da sua atenção</div>
             <div id="dashAlertsList"></div>
           </div>
         </div>
 
-        <div class="projection-card" id="dashProjection"></div>
+        <div class="card">
+          <h3>Previsão de Fechamento do Mês</h3>
+          <div class="sub">Cálculo baseado no histórico atual</div>
+          <div id="dashProjection" style="display:flex; gap:30px; align-items:center; margin-top:15px;"></div>
+        </div>
       </div>
 
       <!-- ===== BALANÇO ENERGÉTICO ===== -->
       <div class="view" id="view-balanco">
-        <div class="banner">
+        <div class="banner" style="background:linear-gradient(120deg,#1C2541,var(--navy));">
           <div>
             <div class="eyebrow">BALANÇO</div>
             <h1>Balanço Energético</h1>
-            <p>Consumo × Geração × Rede — entenda para onde vai cada kWh</p>
+            <p>Consumo × Geração × Rede — entenda para onde vai cada kWh.</p>
           </div>
         </div>
 
         <div class="filter-card">
-          <div class="fc-head">🔎 Configurar análise</div>
+          <div class="fc-head"><i class="fa-solid fa-filter"></i> Configurar Análise</div>
           <div class="filter-grid">
-            <div class="field-group"><label>Residência</label><select id="balResidencia" onchange="renderBalanco()"></select></div>
+            <div class="field-group"><label>Residência</label><select id="balResidencia" disabled></select></div>
             <div class="field-group"><label>Período</label>
-              <select id="balPeriodo" onchange="renderBalanco()">
-                <option value="hoje">Hoje (por hora)</option>
+              <select id="balPeriodo">
                 <option value="semana">Últimos 7 dias</option>
+                <option value="hoje">Hoje (por hora)</option>
                 <option value="mes">Mês atual</option>
               </select>
             </div>
             <div class="field-group"><label>Visualização</label>
               <select id="balVisao">
-                <option>Barras agrupadas</option>
-                <option>Linha do tempo</option>
+                <option value="barras">Barras agrupadas</option>
+                <option value="linha">Linha do tempo</option>
               </select>
             </div>
-            <div class="field-group"><label>&nbsp;</label>
-              <button class="btn btn-orange" style="width:100%;" onclick="renderBalanco();showToast('Balanço atualizado')">🔄 Atualizar</button>
+            <div class="field-group">
+              <button class="btn btn-blue" style="width:100%; height:42px;" onclick="renderBalanco()"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="balance-legend">
-            <span><span class="sw" style="background:var(--yellow)"></span> Geração solar</span>
-            <span><span class="sw" style="background:var(--blue)"></span> Consumo</span>
-            <span><span class="sw" style="background:#8a94a8"></span> Consumo da rede</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+              <h3 id="balChartTitle">Balanço de Energia</h3>
+              <div class="sub">Dados reais baseados no banco de dados.</div>
+            </div>
+            <div style="display:flex; gap:15px; font-size:12px; font-weight:700;">
+              <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:var(--yellow); border-radius:3px;"></span> Geração</span>
+              <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:var(--blue); border-radius:3px;"></span> Consumo</span>
+            </div>
           </div>
-          <h3 id="balChartTitle">Balanço de hoje</h3>
-          <div class="sub" id="balChartSub">Perfil horário simulado</div>
-          <div class="balance-chart" id="balanceChart"></div>
-          <div class="balance-summary" id="balanceSummary"></div>
+          
+          <div id="balCanvasWrap" style="height:300px; width:100%; display:flex; justify-content:center;">
+            <canvas id="balChartCanvas"></canvas>
+          </div>
+          
+          <div id="balTimelineWrap" style="display:none; flex-direction:column; gap:10px;"></div>
+
+          <div class="balance-summary" id="balanceSummary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:30px; border-top:1px solid var(--border); padding-top:20px;"></div>
         </div>
       </div>
 
       <!-- ===== PREVISÃO DE GERAÇÃO ===== -->
       <div class="view" id="view-previsao">
-        <div class="banner">
+        <div class="banner" style="background:linear-gradient(120deg,var(--orange),var(--orange-2));">
           <div>
             <div class="eyebrow">PREVISÃO</div>
             <h1>Previsão de Geração Solar</h1>
-            <p>Baseada em previsão do tempo para sua localização</p>
+            <p>Baseada em previsão do tempo para sua localização.</p>
           </div>
-          <div class="banner-note" id="previsaoAtualizado">Atualizado agora</div>
         </div>
 
         <div class="filter-card">
-          <div class="fc-head">🔎 Configurar previsão</div>
+          <div class="fc-head"><i class="fa-solid fa-sliders"></i> Configurar Previsão</div>
           <div class="filter-grid">
-            <div class="field-group"><label>Residência</label><select id="prevResidencia" onchange="renderPrevisao()"></select></div>
-            <div class="field-group"><label>Localização</label><input type="text" id="prevLoc" value="Buscando..." readonly></div>
+            <div class="field-group"><label>Residência</label><select id="prevResidencia" disabled></select></div>
+            <div class="field-group"><label>Localização</label><input type="text" id="prevLoc" value="Buscando..." readonly style="background:#f0f3f8; cursor:not-allowed;"></div>
             <div class="field-group"><label>Horizonte</label>
-              <select id="prevHorizonte" onchange="renderPrevisao()">
+              <select id="prevHorizonte">
                 <option value="7">Próximos 7 dias</option>
                 <option value="3">Próximos 3 dias</option>
               </select>
             </div>
-            <div class="field-group"><label>&nbsp;</label>
-              <button class="btn btn-orange" style="width:100%;" onclick="renderPrevisao();showToast('Previsão atualizada')">🔄 Atualizar previsão</button>
+            <div class="field-group">
+              <button class="btn btn-orange" style="width:100%; height:42px;" onclick="renderPrevisao()"><i class="fa-solid fa-arrows-rotate"></i> Atualizar</button>
             </div>
           </div>
         </div>
@@ -551,206 +573,94 @@
         <div class="forecast-grid" id="forecastGrid"></div>
 
         <div class="panels">
-          <div class="forecast-detail" id="forecastDetail"></div>
+          <div class="card" id="forecastDetail"></div>
           <div class="card">
-            <h3>Como funciona a previsão</h3>
+            <h3>Como funciona?</h3>
             <div class="sub">Transparência total sobre os dados</div>
-            <div style="font-size:12.5px;line-height:1.6;color:#3b4358;">
-              <p><b>1. Fonte meteorológica:</b> usamos dados de irradiância solar e temperatura previstos para a sua localização (via API Open-Meteo).</p>
-              <p><b>2. Modelo físico:</b> o Django pega esses dados e calcula a potência considerando a sua instalação.</p>
-              <p><b>3. Margem de erro:</b> a previsão tem margem de ±15% para os próximos 3 dias e ±25% para os dias 4-7.</p>
+            <div style="font-size:13px;line-height:1.7;color:#3b4358;">
+              <p><b>1. Meteorologia:</b> Buscamos dados de irradiância solar (Open-Meteo).</p>
+              <p><b>2. Modelo Físico:</b> O Django calcula a potência considerando sua instalação.</p>
+              <p><b>3. Margem de erro:</b> ±15% para 3 dias e ±25% para 7 dias.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ===== RELATÓRIOS ===== -->
-      <div class="view" id="view-relatorio">
-        <div class="banner">
+      <!-- ===== MAPA ===== -->
+      <div class="view" id="view-mapa">
+        <div class="banner" style="background:linear-gradient(120deg,#0f172a,#1e293b);">
           <div>
-            <div class="eyebrow">RELATÓRIOS</div>
-            <h1>Relatórios</h1>
-            <p>Documentos detalhados sobre o desempenho do seu sistema solar</p>
+            <div class="eyebrow">GEOESPACIAL</div>
+            <h1>Mapa de Monitoramento</h1>
+            <p>Localização e status dos inversores em tempo real.</p>
           </div>
         </div>
-
-        <div class="filter-card">
-          <div class="fc-head">📄 Gerar novo relatório</div>
-          <div class="filter-grid">
-            <div class="field-group"><label>Tipo de relatório</label>
-              <select id="relTipo">
-                <option>Resumo mensal</option>
-                <option>Balanço energético</option>
-                <option>Desempenho do sistema solar</option>
-                <option>Economia acumulada</option>
-              </select>
-            </div>
-            <div class="field-group"><label>Formato</label>
-              <select id="relFormato"><option>PDF</option><option>XLSX</option><option>CSV</option></select>
-            </div>
-            <div class="field-group"><label>Mês de referência</label><input type="month" id="relMes" value="2026-08"></div>
-            <div class="field-group"><label>&nbsp;</label>
-              <button class="btn btn-orange" style="width:100%;" onclick="gerarRelatorio()">⚙ Gerar relatório</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="table-card">
-          <div class="tc-head"><h3>Relatórios gerados</h3><span class="count" id="relCount">0 relatórios</span></div>
-          <div id="relList"></div>
+        <div style="position:relative;">
+          <div id="mapaMonitoramento"></div>
         </div>
       </div>
 
-      <!-- ===== DICAS DE ECONOMIA ===== -->
-      <div class="view" id="view-dicas">
-        <div class="banner">
-          <div>
-            <div class="eyebrow">INTELIGÊNCIA</div>
-            <h1>Dicas de Economia</h1>
-            <p>Recomendações personalizadas com base nos seus dados de consumo e geração</p>
-          </div>
-        </div>
-
-        <div class="filter-card">
-          <div class="fc-head">🔎 Filtrar por residência</div>
-          <div class="filter-grid">
-            <div class="field-group"><label>Residência</label><select id="dicasResidencia" onchange="renderDicas()"></select></div>
-          </div>
-        </div>
-
-        <div id="dicasList"></div>
-      </div>
-
-      <!-- ===== AVISOS ===== -->
-      <div class="view" id="view-avisos">
-        <div class="banner">
-          <div>
-            <div class="eyebrow">INTELIGÊNCIA</div>
-            <h1>Avisos</h1>
-            <p>Situações que merecem sua atenção — ordenadas por prioridade</p>
-          </div>
-        </div>
-
-        <div class="filter-card">
-          <div class="fc-head">🔎 Filtrar avisos</div>
-          <div class="filter-grid">
-            <div class="field-group"><label>Severidade</label>
-              <select id="avisoSeveridade" onchange="renderAvisos()">
-                <option value="">Todas</option>
-                <option value="critico">🔴 Crítico</option>
-                <option value="atencao">🟠 Atenção</option>
-                <option value="normal">🟢 Informativo</option>
-              </select>
-            </div>
-            <div class="field-group"><label>Residência</label>
-              <select id="avisoResidencia" onchange="renderAvisos()"><option value="">Todas</option></select>
-            </div>
-          </div>
-        </div>
-
-        <div id="avisosList"></div>
-      </div>
-
-      <!-- ===== SIMULADOR REAL ===== -->
-      <div class="view" id="view-simulador">
-        <div class="banner">
-          <div>
-            <div class="eyebrow">FERRAMENTA</div>
-            <h1>Simulador Solar Real</h1>
-            <p>Simulação baseada no seu CEP e na previsão meteorológica processada pelo Django</p>
-          </div>
-        </div>
-
-        <div class="filter-card">
-          <div class="fc-head">📍 Dados da Instalação</div>
-          <div class="filter-grid cols-3">
-            <div class="field-group"><label>CEP</label><input type="text" id="simCep" placeholder="Ex: 29160-000" maxlength="9"></div>
-            <div class="field-group"><label>Qtd. de Painéis</label><input type="number" id="simQtdPaineis" value="10" min="1"></div>
-            <div class="field-group"><label>Potência do Painel (W)</label><input type="number" id="simPotPainel" value="550" min="50"></div>
-          </div>
-          
-          <div class="fc-head" style="margin-top:14px;">⚙️ Parâmetros Técnicos e Financeiros</div>
-          <div class="filter-grid cols-3">
-            <div class="field-group"><label>Consumo Mensal (kWh)</label><input type="number" id="simConsumo" value="400"></div>
-            <div class="field-group"><label>Tarifa (R$/kWh)</label><input type="number" id="simTarifa" value="0.85" step="0.01"></div>
-            <div class="field-group"><label>Inclinação (graus)</label><input type="number" id="simInclinacao" value="20" min="0" max="90"></div>
-          </div>
-          <div class="filter-grid cols-3" style="margin-top:14px;">
-            <div class="field-group"><label>Orientação (Azimute)</label>
-              <select id="simAzimute">
-                <option value="180">Norte (180°)</option>
-                <option value="-135">Nordeste (-135°)</option>
-                <option value="-90">Leste (-90°)</option>
-                <option value="-45">Sudeste (-45°)</option>
-                <option value="0">Sul (0°)</option>
-                <option value="45">Sudoeste (45°)</option>
-                <option value="90">Oeste (90°)</option>
-                <option value="135">Noroeste (135°)</option>
-              </select>
-            </div>
-            <div class="field-group"><label>Eficiência do Inversor (%)</label><input type="number" id="simEficiencia" value="97" min="80" max="100"></div>
-            <div class="field-group"><label>Perdas Adicionais (%)</label><input type="number" id="simPerdas" value="10" min="0" max="30"></div>
-          </div>
-
-          <div class="btn-row" style="margin-top:20px;">
-            <button class="btn btn-orange" id="btnCalcularSimulacao" style="width:100%; justify-content:center; font-size:14px;" onclick="executarSimulacaoReal()">🚀 Calcular Simulação Real</button>
-          </div>
-        </div>
-
-        <div id="simLoading" style="display:none; text-align:center; padding:40px; color:var(--blue);">
-          <h3>Buscando dados e calculando...</h3>
-          <p>Consultando ViaCEP, Geocoding e API Kivora...</p>
-        </div>
-
-        <div class="sim-grid" id="simResultado" style="display:none;">
-          <div class="sim-result">
-            <h3>Resumo da Simulação</h3>
-            <div id="simResumoKpis" style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px;"></div>
-            <div id="simMensagemFinal" style="margin-top:16px; padding:12px; background:var(--blue-soft); border-radius:8px; font-size:12px; color:#1668c2; line-height:1.5;"></div>
-          </div>
-          <div class="sim-result">
-            <h3>Geração Prevista (Próximos dias)</h3>
-            <div class="balance-chart" id="simGraficoBarras" style="height:200px; margin-top:20px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== MINHA CONTA ===== -->
+      <!-- ===== MEUS DADOS ===== -->
       <div class="view" id="view-conta">
-        <div class="banner">
-          <div><div class="eyebrow">MINHA CONTA</div><h1>Meus Dados</h1><p>Informações cadastrais e do sistema solar</p></div>
-        </div>
-        <div class="filter-card">
-          <div class="fc-head">👤 Dados pessoais</div>
-          <div class="filter-grid">
-            <div class="field-group"><label>Nome</label><input type="text" value="Maria Silva" readonly></div>
-            <div class="field-group"><label>E-mail</label><input type="email" value="maria@email.com" readonly></div>
-            <div class="field-group"><label>Telefone</label><input type="text" value="(27) 99999-0000" readonly></div>
-            <div class="field-group"><label>Distribuidora</label><input type="text" value="EDP Espírito Santo" readonly></div>
+        <div class="banner" style="background:linear-gradient(120deg,var(--navy),var(--blue));">
+          <div>
+            <div class="eyebrow">MINHA CONTA</div>
+            <h1>Meus Dados</h1>
+            <p>Gerencie suas informações e parâmetros do sistema.</p>
           </div>
         </div>
+
+        <div class="profile-header">
+          <div class="profile-avatar-large" id="profAvatar">U</div>
+          <div class="profile-info">
+            <h2 id="profName">Usuário</h2>
+            <p><i class="fa-solid fa-envelope"></i> <span id="profEmail">email@exemplo.com</span></p>
+            <p><i class="fa-solid fa-location-dot"></i> <span id="profLocation">CEP: ---</span></p>
+          </div>
+        </div>
+
         <div class="filter-card">
-          <div class="fc-head">☀️ Sistema solar</div>
-          <div class="filter-grid">
-            <div class="field-group"><label>Potência instalada</label><input type="text" value="5,4 kWp" readonly></div>
-            <div class="field-group"><label>Inclinação</label><input type="text" value="20°" readonly></div>
-            <div class="field-group"><label>Orientação</label><input type="text" value="Norte" readonly></div>
-            <div class="field-group"><label>Tarifa</label><input type="text" value="R$ 0,72/kWh" readonly></div>
+          <div class="fc-head"><i class="fa-solid fa-user-pen"></i> Dados Cadastrais</div>
+          <div class="filter-grid cols-3">
+            <div class="field-group"><label>Nome Completo</label><input type="text" id="editNome"></div>
+            <div class="field-group"><label>E-mail (Não editável)</label><input type="email" id="editEmail" readonly style="background:#f0f3f8;"></div>
+            <div class="field-group"><label>CEP</label><input type="text" id="editCep"></div>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="fc-head"><i class="fa-solid fa-solar-panel"></i> Parâmetros do Sistema</div>
+          <div class="filter-grid cols-3">
+            <div class="field-group"><label>Potência Instalada (kWp)</label><input type="number" id="editPotencia" step="0.1"></div>
+            <div class="field-group"><label>Tarifa (R$/kWh)</label><input type="number" id="editTarifa" step="0.01"></div>
+            <div class="field-group">
+              <button class="btn btn-green" style="width:100%; height:42px;" onclick="salvarPerfil()"><i class="fa-solid fa-floppy-disk"></i> Salvar Alterações</button>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- ===== HISTÓRICO DE FATURAS ===== -->
       <div class="view" id="view-faturas">
-        <div class="banner"><div><div class="eyebrow">MINHA CONTA</div><h1>Histórico de Faturas</h1><p>Faturas dos últimos meses</p></div></div>
+        <div class="banner" style="background:linear-gradient(120deg,var(--navy),var(--blue));">
+          <div>
+            <div class="eyebrow">MINHA CONTA</div>
+            <h1>Histórico de Faturas</h1>
+            <p>Acompanhe sua economia mês a mês.</p>
+          </div>
+        </div>
+
         <div class="table-card">
-          <div class="tc-head"><h3>Faturas</h3><span class="count">6 meses</span></div>
+          <div class="tc-head">
+            <h3>Faturas Calculadas</h3>
+            <span style="font-size:12px; color:var(--muted); font-weight:700;" id="faturaCount">0 meses</span>
+          </div>
           <table>
-            <thead><tr><th>Mês</th><th>Consumo (kWh)</th><th>Geração (kWh)</th><th>Autoconsumo</th><th>Fatura</th><th></th></tr></thead>
-            <tbody>
-              <tr><td>Julho/2026</td><td>412</td><td>524</td><td>62%</td><td>R$ 38,40</td><td><button class="icon-btn">⬇</button></td></tr>
-              <tr><td>Junho/2026</td><td>438</td><td>498</td><td>58%</td><td>R$ 51,20</td><td><button class="icon-btn">⬇</button></td></tr>
-              <tr><td>Maio/2026</td><td>396</td><td>510</td><td>64%</td><td>R$ 34,80</td><td><button class="icon-btn">⬇</button></td></tr>
+            <thead>
+              <tr><th>Mês/Ano</th><th>Consumo (kWh)</th><th>Geração (kWh)</th><th>Autoconsumo</th><th>Fatura Estimada</th></tr>
+            </thead>
+            <tbody id="faturasTableBody">
+              <tr><td colspan="5" style="text-align:center; padding:30px;">Carregando...</td></tr>
             </tbody>
           </table>
         </div>
@@ -758,41 +668,234 @@
 
       <!-- ===== DOCUMENTOS ===== -->
       <div class="view" id="view-documentos">
-        <div class="banner"><div><div class="eyebrow">MINHA CONTA</div><h1>Documentos</h1><p>Contratos, manuais e laudos do seu sistema</p></div></div>
-        <div class="table-card">
-          <div class="tc-head"><h3>Documentos disponíveis</h3><span class="count">4 documentos</span></div>
-          <table>
-            <thead><tr><th>Nome</th><th>Tipo</th><th>Data</th><th></th></tr></thead>
-            <tbody>
-              <tr><td>Contrato de adesão — Kivora</td><td>Contrato</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
-              <tr><td>Manual do inversor Growatt 5000</td><td>Manual</td><td>15/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
-              <tr><td>Laudo de vistoria — EDP ES</td><td>Laudo</td><td>20/02/2026</td><td><button class="icon-btn">⬇</button></td></tr>
-            </tbody>
-          </table>
+        <div class="banner" style="background:linear-gradient(120deg,var(--navy),var(--blue));">
+          <div>
+            <div class="eyebrow">MINHA CONTA</div>
+            <h1>Documentos</h1>
+            <p>Contratos, manuais e laudos do seu sistema.</p>
+          </div>
+        </div>
+
+        <div class="docs-grid">
+          <div class="doc-card" onclick="baixarDoc('Contrato')">
+            <div class="doc-icon"><i class="fa-solid fa-file-contract"></i></div>
+            <div class="doc-title">Contrato de Adesão</div>
+            <div class="doc-meta">PDF • 15/02/2026</div>
+            <button class="btn btn-outline" style="width:100%; padding:8px;"><i class="fa-solid fa-download"></i> Baixar</button>
+          </div>
+          <div class="doc-card" onclick="baixarDoc('Manual')">
+            <div class="doc-icon" style="background:var(--blue-soft); color:var(--blue);"><i class="fa-solid fa-book"></i></div>
+            <div class="doc-title">Manual do Inversor</div>
+            <div class="doc-meta">PDF • 15/02/2026</div>
+            <button class="btn btn-outline" style="width:100%; padding:8px;"><i class="fa-solid fa-download"></i> Baixar</button>
+          </div>
+          <div class="doc-card" onclick="baixarDoc('Laudo')">
+            <div class="doc-icon" style="background:var(--green-soft); color:var(--green);"><i class="fa-solid fa-clipboard-check"></i></div>
+            <div class="doc-title">Laudo de Vistoria</div>
+            <div class="doc-meta">PDF • 20/02/2026</div>
+            <button class="btn btn-outline" style="width:100%; padding:8px;"><i class="fa-solid fa-download"></i> Baixar</button>
+          </div>
+          <div class="doc-card" onclick="baixarDoc('Garantia')">
+            <div class="doc-icon" style="background:var(--orange-soft); color:var(--orange);"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="doc-title">Garantia dos Painéis</div>
+            <div class="doc-meta">PDF • 15/02/2026</div>
+            <button class="btn btn-outline" style="width:100%; padding:8px;"><i class="fa-solid fa-download"></i> Baixar</button>
+          </div>
         </div>
       </div>
 
       <!-- ===== COMUNIDADE ===== -->
       <div class="view" id="view-comunidade">
-        <div class="banner"><div><div class="eyebrow">MINHA CONTA</div><h1>Comunidade Kivora</h1><p>Compare seu desempenho com outras residências (dados anônimos)</p></div></div>
-        <div class="card">
-          <h3>Sua residência vs. média da região (Serra - ES)</h3>
-          <div class="sub">Comparação anônima com 342 residências próximas</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:12px;">
-            <div style="text-align:center;padding:16px;background:var(--blue-soft);border-radius:8px;">
-              <div style="font-size:24px;font-weight:800;color:var(--blue);">62%</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:4px;">Seu autoconsumo</div>
-              <div style="font-size:10px;color:var(--green);margin-top:2px;">+8% vs. média regional</div>
+        <div class="banner" style="background:linear-gradient(120deg,var(--navy),var(--blue));">
+          <div>
+            <div class="eyebrow">MINHA CONTA</div>
+            <h1>Comunidade Kivora</h1>
+            <p>Compare seu desempenho com outras residências.</p>
+          </div>
+        </div>
+
+        <div class="panels">
+          <div class="card" style="text-align:center;">
+            <div class="community-badge"><i class="fa-solid fa-medal"></i> Top 15% da Região</div>
+            <h3>Seu Autoconsumo</h3>
+            <div style="font-size:48px; font-weight:900; color:var(--green); line-height:1; margin:15px 0;">62%</div>
+            <p style="color:var(--muted); font-size:13px;">Você está usando a energia gerada na hora, reduzindo custos.</p>
+            
+            <div style="margin-top:30px; text-align:left;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:5px;">
+                <span>Sua Casa (62%)</span>
+                <span style="color:var(--muted);">Média Regional (54%)</span>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar" style="width:62%;"></div>
+              </div>
             </div>
-            <div style="text-align:center;padding:16px;background:var(--blue-soft);border-radius:8px;">
-              <div style="font-size:24px;font-weight:800;color:var(--blue);">54%</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:4px;">Autoconsumo médio regional</div>
-              <div style="font-size:10px;color:var(--muted);margin-top:2px;">342 residências</div>
+          </div>
+          
+          <div class="card">
+            <h3>Sua Economia vs. Sem Solar</h3>
+            <div class="sub">Baseado na tarifa atual e no seu consumo.</div>
+            <div style="text-align:center; padding:30px 0;">
+              <i class="fa-solid fa-piggy-bank" style="font-size:60px; color:var(--orange); margin-bottom:20px;"></i>
+              <div style="font-size:36px; font-weight:900; color:var(--navy);">R$ 1.240</div>
+              <div style="font-size:14px; color:var(--muted); font-weight:600;">Economizados por ano</div>
             </div>
-            <div style="text-align:center;padding:16px;background:var(--green-soft);border-radius:8px;">
-              <div style="font-size:24px;font-weight:800;color:var(--green);">78%</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:4px;">Sua economia vs. sem solar</div>
-              <div style="font-size:10px;color:var(--green);margin-top:2px;">R$ 1.240 economizados/ano</div>
+            <div style="background:var(--orange-soft); padding:15px; border-radius:8px; font-size:12px; color:#8a5c0d; text-align:center; font-weight:600;">
+              <i class="fa-solid fa-lightbulb"></i> Dica: Aumente o autoconsumo para economizar ainda mais!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== RELATÓRIOS ===== -->
+      <div class="view" id="view-relatorio">
+        <div class="banner" style="background:linear-gradient(120deg,var(--navy),var(--blue));">
+          <div>
+            <div class="eyebrow">INTELIGÊNCIA</div>
+            <h1>Relatórios</h1>
+            <p>Documentos detalhados sobre o desempenho do sistema.</p>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="fc-head"><i class="fa-solid fa-file-circle-plus"></i> Gerar Novo Relatório</div>
+          <div class="filter-grid">
+            <div class="field-group"><label>Tipo de Relatório</label>
+              <select id="relTipo">
+                <option value="Consolidado">Consolidado Geral</option>
+                <option value="Balanço">Balanço Energético</option>
+                <option value="Desempenho">Desempenho Solar</option>
+              </select>
+            </div>
+            <div class="field-group"><label>Formato</label>
+              <select id="relFormato"><option value="PDF">PDF</option><option value="CSV">CSV (Excel)</option></select>
+            </div>
+            <div class="field-group"><label>Mês de Referência</label><input type="month" id="relMes" value="2026-10"></div>
+            <div class="field-group">
+              <button class="btn btn-orange" style="width:100%; height:42px;" onclick="gerarRelatorio()"><i class="fa-solid fa-gear"></i> Gerar Relatório</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="tc-head"><h3>Relatórios Gerados</h3><span style="font-size:12px; color:var(--muted); font-weight:700;" id="relCount">0 relatórios</span></div>
+          <div id="relList"></div>
+        </div>
+      </div>
+
+      <!-- ===== DICAS DE ECONOMIA ===== -->
+      <div class="view" id="view-dicas">
+        <div class="banner" style="background:linear-gradient(120deg,var(--navy),var(--blue));">
+          <div>
+            <div class="eyebrow">INTELIGÊNCIA</div>
+            <h1>Dicas de Economia</h1>
+            <p>Recomendações personalizadas com base nos seus dados.</p>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="fc-head"><i class="fa-solid fa-sliders"></i> Filtrar por Residência</div>
+          <div class="filter-grid">
+            <div class="field-group"><select id="dicasResidencia" disabled></select></div>
+          </div>
+        </div>
+
+        <div class="tips-grid" id="dicasList"></div>
+      </div>
+
+      <!-- ===== AVISOS ===== -->
+      <div class="view" id="view-avisos">
+        <div class="banner" style="background:linear-gradient(120deg,#1C2541,var(--navy));">
+          <div>
+            <div class="eyebrow">INTELIGÊNCIA</div>
+            <h1>Avisos</h1>
+            <p>Mission Control — Status e ocorrências do sistema.</p>
+          </div>
+        </div>
+
+        <div class="status-header">
+          <div class="status-box" id="statusInversorBox">
+            <div class="sb-icon" id="statusInversorIcon"><i class="fa-solid fa-solar-panel"></i></div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase;">Status do Inversor</div>
+              <div style="font-size:20px; font-weight:800; color:var(--navy);" id="statusInversorTxt">Verificando...</div>
+            </div>
+          </div>
+          <div class="status-box" style="border-left-color:var(--blue);">
+            <div class="sb-icon" style="background:var(--blue-soft); color:var(--blue);"><i class="fa-solid fa-tower-broadcast"></i></div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase;">Conexão com a Nuvem</div>
+              <div style="font-size:20px; font-weight:800; color:var(--navy);">Estável</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="fc-head"><i class="fa-solid fa-filter"></i> Filtrar Avisos</div>
+          <div class="filter-grid">
+            <div class="field-group">
+              <label>Severidade</label>
+              <select id="avisoSeveridade" onchange="renderAvisos()">
+                <option value="">Todos</option>
+                <option value="critico">🔴 Crítico</option>
+                <option value="atencao">🟠 Atenção</option>
+                <option value="normal">🟢 Normal</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Residência</label>
+              <select id="avisoResidencia" disabled></select>
+            </div>
+          </div>
+        </div>
+
+        <div id="avisosList"></div>
+      </div>
+
+      <!-- ===== SIMULADOR ===== -->
+      <div class="view" id="view-simulador">
+        <div class="banner" style="background:linear-gradient(120deg,var(--orange),var(--orange-2));">
+          <div>
+            <div class="eyebrow">FERRAMENTA</div>
+            <h1>Simulador Solar Real</h1>
+            <p>Projete sua economia com base no seu CEP e clima.</p>
+          </div>
+        </div>
+
+        <div class="panels">
+          <!-- FORMULÁRIO -->
+          <div class="card">
+            <h3>Dados da Instalação</h3>
+            <div class="sub">Preencha para calcular</div>
+            <div class="filter-grid" style="grid-template-columns:1fr 1fr;">
+              <div class="field-group"><label>CEP</label><input type="text" id="simCep" placeholder="00000-000"></div>
+              <div class="field-group"><label>Qtd. Painéis</label><input type="number" id="simQtdPaineis" value="10"></div>
+              <div class="field-group"><label>Potência Painel (W)</label><input type="number" id="simPotPainel" value="550"></div>
+              <div class="field-group"><label>Tarifa (R$/kWh)</label><input type="number" id="simTarifa" value="0.85" step="0.01"></div>
+            </div>
+            <button class="btn btn-orange" style="width:100%; margin-top:20px; padding:15px; font-size:15px;" onclick="executarSimulacaoReal()"><i class="fa-solid fa-rocket"></i> Calcular Simulação</button>
+          </div>
+
+          <!-- RESULTADO -->
+          <div class="card" id="simResultado" style="display:none; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+            <div id="simLoading" style="display:none; padding:40px;">
+              <i class="fa-solid fa-circle-notch fa-spin" style="font-size:40px; color:var(--orange); margin-bottom:15px;"></i>
+              <h3>Calculando...</h3>
+            </div>
+            
+            <div id="simContent" style="display:none; width:100%;">
+              <h3 style="color:var(--green); font-size:22px; margin-bottom:5px;">Economia Estimada</h3>
+              <div style="font-size:48px; font-weight:900; color:var(--navy); line-height:1;" id="simValorEconomia">R$ 0,00</div>
+              <p style="color:var(--muted); font-size:13px; margin-top:10px;">por mês na sua conta de luz</p>
+              
+              <div style="width:200px; height:200px; margin:20px auto; position:relative;">
+                <canvas id="simDonutChart"></canvas>
+                <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                  <span style="font-size:24px; font-weight:900; color:var(--navy);" id="simPctCobertura">0%</span>
+                  <span style="font-size:10px; color:var(--muted); font-weight:700;">COBERTURA</span>
+                </div>
+              </div>
+              <p style="font-size:12px; color:#3b4358;" id="simMsgFinal"></p>
             </div>
           </div>
         </div>
@@ -800,24 +903,82 @@
 
       <!-- ===== CONFIGURAÇÕES ===== -->
       <div class="view" id="view-config">
-        <div class="banner"><div><div class="eyebrow">CONFIGURAÇÕES</div><h1>Configurações</h1><p>Notificações e preferências</p></div></div>
-        <div class="filter-card" style="max-width:560px;">
-          <div class="fc-head">✉ Notificações</div>
-          <div class="field-group" style="margin-bottom:14px;">
-            <label>E-mail para avisos</label>
-            <input type="email" id="cfgEmail" value="maria@email.com">
+        <div class="banner" style="background:linear-gradient(120deg,#1C2541,var(--navy));">
+          <div>
+            <div class="eyebrow">CONFIGURAÇÕES</div>
+            <h1>Preferências</h1>
+            <p>Personalize sua experiência na Kivora.</p>
           </div>
-          <div class="section-label" style="margin-bottom:4px;">Tipos de aviso</div>
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:12.5px;"><input type="checkbox" checked style="width:16px;height:16px;"> Inversor offline</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:12.5px;"><input type="checkbox" checked style="width:16px;height:16px;"> Geração abaixo do previsto</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:12.5px;"><input type="checkbox" checked style="width:16px;height:16px;"> Fatura acima do orçamento</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:12.5px;"><input type="checkbox" checked style="width:16px;height:16px;"> Pico de consumo em horário de ponta</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:12.5px;"><input type="checkbox"> Relatório mensal por e-mail</label>
-          <label style="display:flex;align-items:center;gap:8px;padding:8px 0;font-size:12.5px;"><input type="checkbox" checked style="width:16px;height:16px;"> Dicas de economia semanais</label>
-          <div class="field-group" style="margin-top:14px;"><label>Frequência</label>
-            <select id="cfgFreq"><option>Diário</option><option selected>Semanal</option><option>Mensal</option></select>
+        </div>
+
+        <div class="panels">
+          <div class="card">
+            <h3><i class="fa-solid fa-envelope" style="color:var(--blue);"></i> Notificações</h3>
+            <div class="sub">Escolha como deseja ser avisado.</div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid var(--border);">
+              <div><b style="display:block; font-size:14px;">Inversor Offline</b><span style="font-size:12px; color:var(--muted);">Alertas críticos de falta de geração.</span></div>
+              <input type="checkbox" checked style="width:20px; height:20px; accent-color:var(--green); cursor:pointer;">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid var(--border);">
+              <div><b style="display:block; font-size:14px;">Fatura Alta</b><span style="font-size:12px; color:var(--muted);">Avisar se o consumo passar do limite.</span></div>
+              <input type="checkbox" checked style="width:20px; height:20px; accent-color:var(--green); cursor:pointer;">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0;">
+              <div><b style="display:block; font-size:14px;">Relatório Semanal</b><span style="font-size:12px; color:var(--muted);">Resumo por e-mail toda segunda-feira.</span></div>
+              <input type="checkbox" style="width:20px; height:20px; accent-color:var(--green); cursor:pointer;">
+            </div>
           </div>
-          <div class="btn-row"><button class="btn btn-orange" onclick="showToast('Configurações salvas localmente')">💾 Salvar</button></div>
+
+          <div class="card">
+            <h3><i class="fa-solid fa-shield-halved" style="color:var(--green);"></i> Segurança</h3>
+            <div class="sub">Mantenha sua conta protegida.</div>
+            
+            <button class="btn btn-outline" style="width:100%; justify-content:flex-start; padding:15px; margin-bottom:12px;"><i class="fa-solid fa-key"></i> Alterar Senha</button>
+            <button class="btn btn-outline" style="width:100%; justify-content:flex-start; padding:15px; border-color:var(--orange); color:var(--orange);"><i class="fa-solid fa-mobile-screen"></i> Ativar Autenticação 2FA</button>
+            
+            <div style="margin-top:20px; padding:15px; background:var(--orange-soft); border-radius:8px; font-size:11px; color:#8a5c0d;">
+              <b>Atenção:</b> O envio de e-mails ainda não está integrado ao Backend nesta versão de demonstração.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== GERENCIAR EMPRESAS (ADMIN) ===== -->
+      <div class="view" id="view-gerenciar-empresas">
+        <div class="banner" style="background:linear-gradient(120deg,#1C2541,var(--navy));">
+          <div>
+            <div class="eyebrow">ADMINISTRAÇÃO</div>
+            <h1>Gerenciar Empresas</h1>
+            <p>Cadastre novos clientes corporativos (B2B).</p>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="fc-head"><i class="fa-solid fa-building-circle-plus"></i> Cadastrar Nova Empresa</div>
+          <div class="filter-grid cols-3">
+            <div class="field-group"><label>Nome da Empresa</label><input type="text" id="empNome" placeholder="Ex: SolarTech Ltda"></div>
+            <div class="field-group"><label>CNPJ</label><input type="text" id="empCnpj" placeholder="00.000.000/0000-00"></div>
+            <div class="field-group"><label>E-mail do Gestor</label><input type="email" id="empEmail" placeholder="gestor@empresa.com"></div>
+          </div>
+          <div class="filter-grid cols-3" style="margin-top:14px;">
+            <div class="field-group"><label>Senha Inicial</label><input type="password" id="empSenha" placeholder="********"></div>
+            <div class="field-group">
+              <button class="btn btn-orange" onclick="cadastrarNovaEmpresa()" id="btnCadastrarEmpresa" style="width:100%; height:42px;"><i class="fa-solid fa-plus"></i> Cadastrar Empresa</button>
+            </div>
+          </div>
+          <div id="empErro" style="color:var(--red); font-size:12px; font-weight:700; margin-top:10px; display:none;"></div>
+          <div id="empSucesso" style="color:var(--green); font-size:12px; font-weight:700; margin-top:10px; display:none;"></div>
+        </div>
+
+        <div class="table-card" style="margin-top: 20px;">
+          <div class="tc-head"><h3>Empresas Cadastradas</h3><span style="font-size:12px; color:var(--muted); font-weight:700;" id="countEmpresas">0 empresas</span></div>
+          <table>
+            <thead><tr><th>Nome da Empresa</th><th>CNPJ</th><th>Data de Cadastro</th></tr></thead>
+            <tbody id="tabelaEmpresas">
+              <tr><td colspan="3" style="text-align:center;">Carregando...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -830,163 +991,106 @@
 <div class="ai-panel" id="aiPanel">
   <div class="ai-head">
     <div class="title">
-      <div class="ic">✨</div>
-      <div><b>Assistente Kivora</b><span>Energia Inteligente para um Amanhã Melhor</span></div>
+      <div class="ic"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      <div><b>Assistente Kivora</b><span>Consultor de energia inteligente</span></div>
     </div>
-    <button class="close-btn" onclick="toggleAI(false)">✕</button>
+    <button class="close-btn" onclick="toggleAI(false)"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="ai-body" id="aiBody">
     <div class="section-label">Perguntas sugeridas</div>
     <div class="chip-row" id="aiChips"></div>
     <div class="section-label">Conversa</div>
     <div class="ai-chat-log" id="aiChatLog">
-      <div class="chat-msg ai">Olá! 👋 Sou o Assistente Kivora. Posso te ajudar a entender sua conta de luz, prever sua geração solar ou descobrir como economizar mais. O que você quer saber?</div>
+      <div class="chat-msg ai">Olá! 👋 Sou o Assistente Kivora. Posso te ajudar a entender sua conta, prever sua geração solar ou descobrir como economizar. O que você quer saber?</div>
     </div>
   </div>
   <div class="ai-input-bar">
     <textarea id="aiQuestion" rows="1" placeholder="Pergunte ao Assistente Kivora..." onkeydown="handleAIKeydown(event)" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px';"></textarea>
-    <button class="ai-send-btn" onclick="askAI()">➤</button>
+    <button class="ai-send-btn" onclick="askAI()"><i class="fa-solid fa-paper-plane"></i></button>
   </div>
-  <div class="ai-footer">Respostas baseadas em dados da plataforma Kivora</div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- MODAIS -->
+<div class="modal-overlay" id="modalGeral">
+  <div class="modal">
+    <h3 id="modalTitle">Título</h3>
+    <p class="sub" id="modalSub">Subtítulo</p>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modalGeral')">Fechar</button>
+      <button class="btn btn-green" id="modalBtnDownload" style="display:none;" onclick="baixarCSV()"><i class="fa-solid fa-download"></i> Baixar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i> <span>Mensagem</span></div>
 
 <script>
 /* =========================================================================
-   ESTADO GLOBAL E DADOS SIMULADOS
+   ESTADO GLOBAL
    ========================================================================= */
-const residencias = [
-  {
-    id:'RES-001', nome:'Residência Silva', apelido:'Casa Silva',
-    cep:'29160-000',
-    potenciaInstalada:5.4, inclinacao:20, orientacao:'Norte',
-    tarifa:0.72, tipoLigacao:'Trifásico', orcamentoMensal:80,
-    consumoMes:350, geracaoMes:420,
-    consumoDiario:[9.2,8.8,10.1,7.9,11.2,9.5,8.4,8.8,9.1,10.2,8.5,9.4,11.1,8.9,9.6,10.4,9.2,8.7,9.9,10.1,8.3,9.6,10.8,9.4,8.9,9.1,10.2,9.5,8.8,9.6],
-    geracaoDiaria:[18.2,17.5,19.1,16.8,20.3,19.4,18.8,17.2,19.6,18.1,17.9,19.3,20.1,18.5,19.2,17.7,18.9,19.8,20.4,18.3,17.6,19.1,18.7,19.5,20.2,18.4,19.3,18.9,17.8,19.6],
-    inversorOnline:true,
-    previsaoGeracao:[]
-  }
-];
+const API_URL = 'http://127.0.0.1:8000/api';
+let map = null;
+let balChartInstance = null;
+let simDonutChartInstance = null;
+let relatoriosGerados = [];
+let dadosCSVParaBaixar = "";
 
-const residenteIndex = Object.fromEntries(residencias.map(r=>[r.id,r]));
-const FIO_B_PERCENT = 0.60;
-const FIO_B_PART_TARIFA = 0.28;
-
-/* =========================================================================
-   FUNÇÕES UTILITÁRIAS
-   ========================================================================= */
 function fmtMoney(v){ return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2}); }
 function showToast(msg){
-  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  const t = document.getElementById('toast'); 
+  t.querySelector('span').textContent = msg; 
+  t.classList.add('show');
   clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
 }
-function toggleSidebar(force){
-  const sb = document.getElementById('sidebarEl');
-  const ov = document.getElementById('sidebarOverlay');
-  const open = typeof force === 'boolean' ? force : !sb.classList.contains('open');
-  sb.classList.toggle('open', open);
-  ov.classList.toggle('open', open);
+function openModal(title, sub, body, showDownload=false){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalSub').textContent = sub;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modalBtnDownload').style.display = showDownload ? 'inline-flex' : 'none';
+  document.getElementById('modalGeral').classList.add('open');
 }
-function toggleAI(open){
-  document.getElementById('aiPanel').classList.toggle('open', open);
-  document.getElementById('overlay').classList.toggle('open', open);
-  if(open) renderChips();
-}
-
-/* =========================================================================
-   LÓGICA DE CÁLCULO E ANÁLISE (SIMULADOS)
-   ========================================================================= */
-function calcularBalanco(res){
-  const consumo = res.consumoMes;
-  const geracao = res.geracaoMes;
-  const autoconsumo = Math.min(consumo, geracao);
-  const excedente = Math.max(0, geracao - consumo);
-  const consumoRede = Math.max(0, consumo - geracao);
-  const custoRede = consumoRede * res.tarifa;
-  const custoFioB = excedente * FIO_B_PART_TARIFA * FIO_B_PERCENT * res.tarifa;
-  const custoDisponibilidade = res.tipoLigacao === 'Trifásico' ? 50 * res.tarifa : 30 * res.tarifa;
-  const faturaTotal = custoRede + custoFioB + (consumoRede === 0 ? custoDisponibilidade : 0);
-  const economiaSolar = (autoconsumo + excedente) * res.tarifa - custoFioB;
-  return {consumo, geracao, autoconsumo, excedente, consumoRede, custoRede, custoFioB, custoDisponibilidade, faturaTotal, economiaSolar};
-}
-
-function analyzeResidencia(res){
-  const issues = [];
-  const bal = calcularBalanco(res);
-  const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo / bal.geracao) * 100 : 0;
-
-  if(autoconsumoPct < 50 && bal.geracao > 0){
-    issues.push({
-      tipo:'autoconsumo_baixo', severidade:'atencao',
-      titulo:'Autoconsumo abaixo do ideal',
-      evidencia:`Apenas ${autoconsumoPct.toFixed(0)}% da energia gerada está sendo consumida na hora.`,
-      consequencia:'Você está pagando Fio B desnecessariamente.',
-      recomendacao:'Concentre consumo de equipamentos entre 10h e 15h.'
-    });
-  }
-
-  if(issues.length === 0){
-    issues.push({
-      tipo:'normal', severidade:'normal',
-      titulo:'Sistema operando normalmente',
-      evidencia:`Consumo, geração e autoconsumo estão dentro do esperado.`,
-      consequencia:'Nenhuma ação necessária no momento.',
-      recomendacao:'Continue monitorando pelo painel.'
-    });
-  }
-
-  return issues.map(i => ({...i, residenciaId:res.id, residenciaNome:res.apelido, bal}));
-}
-
-let allIssues = [];
-function rebuildIssues(){
-  allIssues = residencias.flatMap(r => analyzeResidencia(r));
-  allIssues.sort((a,b)=> {
-      const w = {critico:3, atencao:2, normal:1};
-      return w[b.severidade] - w[a.severidade];
-  });
-  allIssues.forEach((iss,i)=> iss._id = 'AV-' + (i+1));
-}
-rebuildIssues();
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
 /* =========================================================================
    NAVEGAÇÃO E LOGIN
    ========================================================================= */
 const crumbs = {
-  dashboard:'Visão Geral', balanco:'Balanço Energético', previsao:'Previsão de Geração',
+  dashboard:'Visão Geral', balanco:'Balanço Energético', previsao:'Previsão de Geração', mapa: 'Mapa de Monitoramento',
+  conta:'Meus Dados', faturas:'Histórico de Faturas', documentos:'Documentos', comunidade:'Comunidade',
   relatorio:'Relatórios', dicas:'Dicas de Economia', avisos:'Avisos',
-  simulador:'Simulador Real', config:'Configurações', 'gerenciar-empresas': 'Gerenciar Empresas',
-  conta:'Meus Dados', faturas:'Histórico de Faturas', documentos:'Documentos', comunidade:'Comunidade'
+  simulador:'Simulador Real', config:'Configurações', 'gerenciar-empresas': 'Admin Master'
 };
 
 function showView(name, btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const v = document.getElementById('view-'+name);
   if(v) v.classList.add('active');
+  
   document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
   if(btn) btn.classList.add('active');
   else document.querySelector('.nav-item[data-view="'+name+'"]')?.classList.add('active');
+  
   document.getElementById('crumbCurrent').textContent = crumbs[name] || name;
   
+  // Gatilhos de renderização
   if(name==='dashboard') renderDashboard();
   if(name==='balanco') renderBalanco();
   if(name==='previsao') renderPrevisao();
+  if(name==='mapa') renderMapa();
+  if(name==='conta') renderMeusDados();
+  if(name==='faturas') renderFaturas();
   if(name==='relatorio') renderRelList();
   if(name==='dicas') renderDicas();
   if(name==='avisos') renderAvisos();
   if(name==='gerenciar-empresas') carregarEmpresas();
-  
-  if(window.innerWidth <= 640) toggleSidebar(false);
 }
 
 function mostrarCadastro() {
   document.getElementById('telaLogin').style.display = 'none';
   document.getElementById('telaCadastro').style.display = 'flex';
 }
-
 function mostrarLogin() {
   document.getElementById('telaCadastro').style.display = 'none';
   document.getElementById('telaLogin').style.display = 'flex';
@@ -998,45 +1102,38 @@ async function fazerLogin() {
   const btn = document.getElementById('btnLogin');
   const erroDiv = document.getElementById('loginErro');
 
-  if (!email || !senha) {
-    erroDiv.textContent = "Preencha o e-mail e a senha.";
-    erroDiv.style.display = 'block';
-    return;
-  }
+  if (!email || !senha) { erroDiv.textContent = "Preencha todos os campos."; erroDiv.style.display = 'block'; return; }
 
-  btn.textContent = "Verificando...";
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verificando...';
   btn.disabled = true;
   erroDiv.style.display = 'none';
 
   try {
-    const resposta = await fetch('http://127.0.0.1:8000/api/login/', {
+    const resposta = await fetch(`${API_URL}/login/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, password: senha })
     });
-
     const data = await resposta.json();
 
     if (resposta.ok) {
       localStorage.setItem('kivora_token', data.access);
       localStorage.setItem('kivora_user', data.nome);
+      localStorage.setItem('kivora_email', data.email);
       localStorage.setItem('kivora_residencia_id', data.residencia_id);
       localStorage.setItem('kivora_is_master', data.is_master);
 
       document.getElementById('telaLogin').style.display = 'none';
-      document.getElementById('telaCadastro').style.display = 'none';
       document.getElementById('appPrincipal').style.display = 'flex';
       
-      document.querySelector('.user-chip .avatar').textContent = data.nome.charAt(0);
+      document.getElementById('topUserAvatar').textContent = data.nome.charAt(0);
       document.getElementById('topUserName').textContent = data.nome;
+      document.getElementById('topUserRole').textContent = data.is_master ? 'Admin Master' : 'Proprietário';
       
-      if (data.is_master) {
-        document.getElementById('menuAdmin').style.display = 'block';
-      } else {
-        document.getElementById('menuAdmin').style.display = 'none';
-      }
+      document.getElementById('menuAdmin').style.display = data.is_master ? 'block' : 'none';
       
       renderDashboard();
+      showToast("Login realizado com sucesso!");
     } else {
       erroDiv.textContent = data.erro || "E-mail ou senha incorretos.";
       erroDiv.style.display = 'block';
@@ -1045,7 +1142,7 @@ async function fazerLogin() {
     erroDiv.textContent = "Erro de conexão com o servidor.";
     erroDiv.style.display = 'block';
   } finally {
-    btn.textContent = "Entrar no Sistema";
+    btn.innerHTML = 'Entrar no Sistema';
     btn.disabled = false;
   }
 }
@@ -1058,23 +1155,18 @@ async function fazerCadastro() {
   const btn = document.getElementById('btnCadastrar');
   const erroDiv = document.getElementById('cadErro');
 
-  if (!nome || !email || !senha || !cep) {
-    erroDiv.textContent = "Preencha todos os campos.";
-    erroDiv.style.display = 'block';
-    return;
-  }
+  if (!nome || !email || !senha || !cep) { erroDiv.textContent = "Preencha todos os campos."; erroDiv.style.display = 'block'; return; }
 
-  btn.textContent = "Criando conta...";
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Criando...';
   btn.disabled = true;
   erroDiv.style.display = 'none';
 
   try {
-    const resposta = await fetch('http://127.0.0.1:8000/api/register/', {
+    const resposta = await fetch(`${API_URL}/register/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome, email, password: senha, cep })
     });
-
     const data = await resposta.json();
 
     if (resposta.ok) {
@@ -1085,14 +1177,664 @@ async function fazerCadastro() {
       erroDiv.style.display = 'block';
     }
   } catch (error) {
-    erroDiv.textContent = "Erro de conexão com o servidor.";
+    erroDiv.textContent = "Erro de conexão.";
     erroDiv.style.display = 'block';
   } finally {
-    btn.textContent = "Criar minha conta";
+    btn.innerHTML = 'Criar minha conta';
     btn.disabled = false;
   }
 }
 
+function sair() {
+  localStorage.clear();
+  location.reload();
+}
+
+/* =========================================================================
+   RENDERIZAÇÃO DAS TELAS
+   ========================================================================= */
+async function renderDashboard(){
+  const idCasa = localStorage.getItem('kivora_residencia_id');
+  const nomeUser = localStorage.getItem('kivora_user') || 'Usuário';
+  document.getElementById('dashUserName').textContent = nomeUser.split(' ')[0];
+
+  try {
+    if (!idCasa) throw new Error("Sem ID de casa");
+    
+    // 1. KPIs
+    const resDash = await fetch(`${API_URL}/dashboard/${idCasa}/`);
+    const data = await resDash.json();
+    
+    let consumoMes = 0, geracaoMes = 0, autoconsumoPct = 0, faturaTotal = 0;
+    if (data.metricas) {
+        consumoMes = data.metricas.consumo_total;
+        geracaoMes = data.metricas.geracao_total;
+        autoconsumoPct = geracaoMes > 0 ? (data.metricas.autoconsumo / geracaoMes) * 100 : 0;
+        faturaTotal = data.metricas.fatura;
+        if (data.residencia) {
+            // Atualiza os dropdowns com o nome da casa
+            document.querySelectorAll('#balResidencia, #prevResidencia, #dicasResidencia, #avisoResidencia').forEach(sel => {
+                sel.innerHTML = `<option value="${idCasa}">${data.residencia.nome} — ${data.residencia.apelido}</option>`;
+            });
+            localStorage.setItem('kivora_cep_usuario', data.residencia.cep);
+        }
+    }
+
+    document.getElementById('dashStats').innerHTML = `
+      <div class="stat-card"><div class="ic" style="background:var(--blue)"><i class="fa-solid fa-bolt"></i></div><div><div class="val">${consumoMes.toFixed(0)} kWh</div><div class="lbl">Consumo do mês</div></div></div>
+      <div class="stat-card"><div class="ic" style="background:var(--orange)"><i class="fa-solid fa-sun"></i></div><div><div class="val">${geracaoMes.toFixed(0)} kWh</div><div class="lbl">Geração solar</div></div></div>
+      <div class="stat-card"><div class="ic" style="background:var(--green)"><i class="fa-solid fa-arrows-spin"></i></div><div><div class="val">${autoconsumoPct.toFixed(0)}%</div><div class="lbl">Autoconsumo</div></div></div>
+      <div class="stat-card"><div class="ic" style="background:var(--orange-2)"><i class="fa-solid fa-money-bill-wave"></i></div><div><div class="val">${fmtMoney(faturaTotal)}</div><div class="lbl">Fatura estimada</div></div></div>
+    `;
+
+    document.getElementById('dashProjection').innerHTML = `
+      <div style="font-size:36px; font-weight:900; color:var(--orange-2);">${fmtMoney(faturaTotal)}</div>
+      <div style="font-size:14px; color:var(--muted); font-weight:600; margin-top:5px;">Fatura prevista para este mês</div>
+      <div style="display:flex; gap:15px; margin-top:15px;">
+        <div style="background:var(--bg); padding:10px 15px; border-radius:8px;"><b>${consumoMes.toFixed(0)} kWh</b> <span style="font-size:12px; color:var(--muted);">Consumo</span></div>
+        <div style="background:var(--bg); padding:10px 15px; border-radius:8px;"><b>${geracaoMes.toFixed(0)} kWh</b> <span style="font-size:12px; color:var(--muted);">Geração</span></div>
+      </div>
+    `;
+
+    // 2. Previsão Rápida (7 dias) no Dashboard
+    let cep = localStorage.getItem('kivora_cep_usuario') || '29160-000';
+    if (cep) {
+        const resCep = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g,'')}/json/`);
+        const dataCep = await resCep.json();
+        if (!dataCep.erro) {
+            const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(dataCep.localidade)}&count=1&language=pt&format=json`);
+            const dataGeo = await resGeo.json();
+            if (dataGeo.results) {
+                const lat = dataGeo.results[0].latitude; const lon = dataGeo.results[0].longitude;
+                const resPrev = await fetch(`${API_URL}/previsao-solar/?lat=${lat}&lon=${lon}&tilt=20&azimuth=180&potencia=5.4`);
+                const dataPrev = await resPrev.json();
+                if (dataPrev.status === 'sucesso') {
+                    document.getElementById('dashForecastPreview').innerHTML = dataPrev.previsao.slice(0,4).map((d,i)=>`
+                      <div class="forecast-day ${i===0?'today':''}">
+                        <div class="fd-date">${d.dia_semana}</div>
+                        <div class="fd-icon">${d.icone}</div>
+                        <div class="fd-temp">${d.temp_min}–${d.temp_max}°C</div>
+                        <div class="fd-gen">${d.geracao_kwh}</div>
+                        <div class="fd-gen-lbl">kWh</div>
+                      </div>
+                    `).join('');
+                }
+            }
+        }
+    }
+
+    // 3. Avisos Rápidos
+    const resAnalise = await fetch(`${API_URL}/analise/${idCasa}/`);
+    const dataAnalise = await resAnalise.json();
+    if (dataAnalise.avisos && dataAnalise.avisos.length > 0) {
+        const aviso = dataAnalise.avisos[0];
+        document.getElementById('dashAlertsList').innerHTML = `
+          <div style="display:flex; gap:15px; align-items:flex-start; padding:15px; border-radius:10px; border:1px solid var(--border); border-left:5px solid ${aviso.severidade==='critico'?'var(--red)':aviso.severidade==='atencao'?'var(--orange)':'var(--green)'}; background:#fafbfc;">
+             <i class="fa-solid ${aviso.severidade==='critico'?'fa-triangle-exclamation':aviso.severidade==='atencao'?'fa-circle-exclamation':'fa-circle-check'}" style="font-size:24px; color:${aviso.severidade==='critico'?'var(--red)':aviso.severidade==='atencao'?'var(--orange)':'var(--green)'}; margin-top:3px;"></i>
+             <div>
+               <div style="font-weight:800; font-size:14px; color:var(--navy); margin-bottom:5px;">${aviso.titulo}</div>
+               <div style="font-size:12px; color:var(--muted); line-height:1.5;">${aviso.evidencia}</div>
+             </div>
+          </div>
+        `;
+    } else {
+        document.getElementById('dashAlertsList').innerHTML = `<div style="padding:20px; text-align:center; color:var(--green);"><i class="fa-solid fa-check-circle" style="font-size:30px; margin-bottom:10px;"></i><br>Tudo em ordem!</div>`;
+    }
+
+  } catch (erro) {
+    console.warn("Erro dashboard:", erro);
+  }
+}
+
+async function renderBalanco(){
+  const idCasa = localStorage.getItem('kivora_residencia_id');
+  const periodo = document.getElementById('balPeriodo').value;
+  const visao = document.getElementById('balVisao').value;
+
+  try {
+    const res = await fetch(`${API_URL}/analise/${idCasa}/?periodo=${periodo}`);
+    const data = await res.json();
+
+    const wrapBarras = document.getElementById('balCanvasWrap');
+    const wrapTimeline = document.getElementById('balTimelineWrap');
+
+    if (!data.grafico || data.grafico.length === 0) {
+      wrapBarras.innerHTML = '<div style="text-align:center; padding:50px; color:var(--muted);"><i class="fa-solid fa-chart-simple" style="font-size:40px; margin-bottom:15px; opacity:0.3;"></i><br>Nenhuma leitura registrada neste período.</div>';
+      wrapTimeline.style.display = 'none';
+      wrapBarras.style.display = 'flex';
+      document.getElementById('balanceSummary').innerHTML = '';
+      return;
+    }
+
+    let totalConsumo = 0, totalGeracao = 0;
+    data.grafico.forEach(d => { totalConsumo += d.consumo; totalGeracao += d.geracao; });
+    const autoconsumo = Math.min(totalConsumo, totalGeracao);
+    const excedente = Math.max(0, totalGeracao - totalConsumo);
+    const consumoRede = Math.max(0, totalConsumo - totalGeracao);
+    const autoconsumoPct = totalGeracao > 0 ? (autoconsumo/totalGeracao)*100 : 0;
+
+    document.getElementById('balanceSummary').innerHTML = `
+      <div style="text-align:center;"><div style="font-size:24px; font-weight:800; color:var(--green);">${autoconsumoPct.toFixed(0)}%</div><div style="font-size:12px; color:var(--muted); font-weight:600;">Autoconsumo</div></div>
+      <div style="text-align:center;"><div style="font-size:24px; font-weight:800; color:var(--orange);">${excedente.toFixed(0)} kWh</div><div style="font-size:12px; color:var(--muted); font-weight:600;">Excedente Injetado</div></div>
+      <div style="text-align:center;"><div style="font-size:24px; font-weight:800; color:var(--blue);">${consumoRede.toFixed(0)} kWh</div><div style="font-size:12px; color:var(--muted); font-weight:600;">Consumo da Rede</div></div>
+    `;
+
+    if (visao === 'barras') {
+      wrapTimeline.style.display = 'none';
+      wrapBarras.style.display = 'flex';
+      const ctx = document.getElementById('balChartCanvas').getContext('2d');
+      if (balChartInstance) balChartInstance.destroy();
+      
+      balChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.grafico.map(d => d.data),
+          datasets: [
+            { label: 'Geração', data: data.grafico.map(d => d.geracao), backgroundColor: '#F9C74F', borderRadius: 4 },
+            { label: 'Consumo', data: data.grafico.map(d => d.consumo), backgroundColor: '#1F7FE0', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { borderDash: [5,5] } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    } else {
+      wrapBarras.style.display = 'none';
+      wrapTimeline.style.display = 'flex';
+      wrapTimeline.innerHTML = data.grafico.map(d => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border);">
+          <div style="font-weight:800; color:var(--navy); width:80px;">${d.data}</div>
+          <div style="flex:1; display:flex; gap:20px; justify-content:center;">
+            <div style="color:var(--orange-2); font-weight:700;"><i class="fa-solid fa-sun"></i> ${d.geracao.toFixed(1)}</div>
+            <div style="color:var(--blue); font-weight:700;"><i class="fa-solid fa-bolt"></i> ${d.consumo.toFixed(1)}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+  } catch (erro) {
+    console.warn(erro);
+  }
+}
+
+async function renderPrevisao(){
+  const grid = document.getElementById('forecastGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--orange);"></i></div>';
+
+  let cep = localStorage.getItem('kivora_cep_usuario') || '29160-000';
+  let cepLimpo = cep.replace(/\D/g, '');
+
+  try {
+    const resCep = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    const dataCep = await resCep.json();
+    if (dataCep.erro) throw new Error('CEP inválido.');
+
+    const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(dataCep.localidade)}&count=1&language=pt&format=json`);
+    const dataGeo = await resGeo.json();
+    if (!dataGeo.results) throw new Error('Cidade não encontrada.');
+
+    const lat = dataGeo.results[0].latitude; const lon = dataGeo.results[0].longitude;
+    const resDjango = await fetch(`${API_URL}/previsao-solar/?lat=${lat}&lon=${lon}&tilt=20&azimuth=180&potencia=5.4`);
+    const dataDjango = await resDjango.json();
+
+    if (dataDjango.status === 'sucesso') {
+      document.getElementById('prevLoc').value = `${dataCep.localidade} - ${dataCep.uf}`;
+      grid.innerHTML = dataDjango.previsao.map((d, i) => `
+        <div class="forecast-day ${i===0?'today':''}">
+          <div class="fd-date">${d.dia_semana}<br><span style="font-size:10px;">${d.dia_mes}</span></div>
+          <div class="fd-icon">${d.icone}</div>
+          <div class="fd-temp">${d.temp_min}–${d.temp_max}°C</div>
+          <div class="fd-gen">${d.geracao_kwh}</div>
+          <div class="fd-gen-lbl">kWh previstos</div>
+        </div>
+      `).join('');
+
+      const p = dataDjango.previsao[0];
+      document.getElementById('forecastDetail').innerHTML = `
+        <h3>Detalhes de Hoje — ${p.dia_semana}</h3>
+        <div class="sub">${p.icone} ${p.tempo} em ${dataCep.localidade}</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">
+           <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:10px;"><span>Temperatura</span> <b>${p.temp_min}°C a ${p.temp_max}°C</b></div>
+           <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:10px;"><span>Geração Prevista</span> <b style="color:var(--orange); font-size:16px;">${p.geracao_kwh} kWh</b></div>
+           <div style="display:flex; justify-content:space-between;"><span>Economia Estimada</span> <b style="color:var(--green); font-size:16px;">R$ ${(p.geracao_kwh * 0.85).toFixed(2)}</b></div>
+        </div>
+      `;
+    }
+  } catch (erro) {
+    grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--red);">Erro: ${erro.message}</div>`;
+  }
+}
+
+function renderMapa(){
+  if (map) { map.invalidateSize(); return; }
+  
+  // Inicializa o mapa
+  map = L.map('mapaMonitoramento', { zoomControl: false }).setView([-20.128, -40.307], 14);
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  // Camada 1: Dark Mode (Ruas)
+  var darkLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap',
+    className: 'map-tiles'
+  });
+
+  // Camada 2: Satélite (Esri World Imagery)
+  var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri'
+  });
+
+  // Adiciona o Dark Mode por padrão
+  darkLayer.addTo(map);
+
+  // Controle para alternar entre as camadas
+  var baseMaps = {
+    "Mapa Escuro": darkLayer,
+    "Satélite": satelliteLayer
+  };
+  L.control.layers(baseMaps, null, { position: 'topleft' }).addTo(map);
+
+  // Buscar os dados e adicionar marcadores
+  fetch(`${API_URL}/mapa-residencias/`)
+    .then(res => res.json())
+    .then(data => {
+      let onlineCount = 0;
+      let offlineCount = 0;
+
+      data.forEach(res => {
+        let isOnline = res.status === 'online';
+        if(isOnline) onlineCount++; else offlineCount++;
+
+        // Marcador mais bonito com ícone de sol
+        let iconHtml = `
+          <div style="background-color: ${isOnline?'#2fae5e':'#d9534f'}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 15px ${isOnline?'#2fae5e':'#d9534f'}; display:flex; align-items:center; justify-content:center; color:white; font-size:12px;">
+            <i class="fa-solid fa-solar-panel"></i>
+          </div>`;
+          
+        let customIcon = L.divIcon({ className: 'custom-div-icon', html: iconHtml, iconSize: [24, 24], iconAnchor: [12, 12] });
+        
+        L.marker([res.lat, res.lng], { icon: customIcon })
+          .addTo(map)
+          .bindPopup(`
+            <div style="text-align:center; font-family:'Segoe UI'; padding:5px;">
+              <b style="font-size:15px; color:#1c2436;">${res.apelido}</b><br>
+              <span style="font-size:12px; color:#7b8496;">${res.potencia} kWp</span><br>
+              <span style="font-size:11px; font-weight:800; color:${isOnline?'#2fae5e':'#d9534f'}; text-transform:uppercase; display:inline-block; margin-top:5px; background:${isOnline?'#e4f7ea':'#fbe6e5'}; padding:2px 8px; border-radius:10px;">
+                ${isOnline?'Online':'Offline'}
+              </span>
+            </div>
+          `);
+      });
+
+      // HUD de Telemetria (Painel escuro flutuante)
+      let hudHtml = `
+        <div style="position:absolute; top:20px; right:20px; z-index:400; background:rgba(11,19,43,0.85); backdrop-filter:blur(10px); padding:20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); color:#fff; box-shadow:0 10px 30px rgba(0,0,0,0.3); min-width:200px;">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; opacity:0.7; margin-bottom:12px; font-weight:700;">Telemetria da Frota</div>
+          <div style="display:flex; gap:20px; justify-content:space-between;">
+            <div>
+              <div style="font-size:28px; font-weight:800; color:#2fae5e; line-height:1;">${onlineCount}</div>
+              <div style="font-size:11px; opacity:0.8; margin-top:4px;">Online</div>
+            </div>
+            <div style="border-left:1px solid rgba(255,255,255,0.1);"></div>
+            <div>
+              <div style="font-size:28px; font-weight:800; color:#d9534f; line-height:1;">${offlineCount}</div>
+              <div style="font-size:11px; opacity:0.8; margin-top:4px;">Offline</div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('mapaMonitoramento').insertAdjacentHTML('beforeend', hudHtml);
+    });
+}
+
+async function renderMeusDados(){
+  const idCasa = localStorage.getItem('kivora_residencia_id');
+  const nome = localStorage.getItem('kivora_user') || 'Usuário';
+  const email = localStorage.getItem('kivora_email') || 'email@exemplo.com';
+  
+  document.getElementById('profAvatar').textContent = nome.charAt(0);
+  document.getElementById('profName').textContent = nome;
+  document.getElementById('profEmail').textContent = email;
+  document.getElementById('editNome').value = nome;
+  document.getElementById('editEmail').value = email;
+
+  try {
+    const res = await fetch(`${API_URL}/dashboard/${idCasa}/`);
+    const data = await res.json();
+    if(data.residencia) {
+      document.getElementById('profLocation').textContent = `CEP: ${data.residencia.cep}`;
+      document.getElementById('editCep').value = data.residencia.cep;
+      document.getElementById('editPotencia').value = data.residencia.potencia;
+      document.getElementById('editTarifa').value = data.residencia.tarifa || 0.85;
+    }
+  } catch (e) { console.warn(e); }
+}
+
+async function salvarPerfil(){
+  const idCasa = localStorage.getItem('kivora_residencia_id');
+  const novoNome = document.getElementById('editNome').value;
+  const novoCep = document.getElementById('editCep').value;
+  const novaPot = document.getElementById('editPotencia').value;
+  const novaTarifa = document.getElementById('editTarifa').value;
+
+  try {
+    const res = await fetch(`${API_URL}/update-residencia/${idCasa}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        nome: novoNome, 
+        cep: novoCep, 
+        potencia_instalada: novaPot, 
+        tarifa: novaTarifa 
+      })
+    });
+    if (res.ok) {
+      localStorage.setItem('kivora_user', novoNome);
+      document.getElementById('topUserName').textContent = novoNome;
+      document.getElementById('topUserAvatar').textContent = novoNome.charAt(0);
+      showToast("Perfil atualizado com sucesso!");
+      renderMeusDados();
+    } else {
+      showToast("Erro ao salvar dados.");
+    }
+  } catch (e) { showToast("Erro de conexão."); }
+}
+
+async function renderFaturas(){
+  const idCasa = localStorage.getItem('kivora_residencia_id');
+  const tbody = document.getElementById('faturasTableBody');
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando...</td></tr>';
+
+  try {
+    const res = await fetch(`${API_URL}/historico-faturas/${idCasa}/`);
+    const data = await res.json();
+    
+    document.getElementById('faturaCount').textContent = `${data.length} meses`;
+    
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">Nenhuma fatura registrada.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(f => `
+      <tr>
+        <td style="font-weight:800; color:var(--navy);">${f.mes}</td>
+        <td>${f.consumo.toFixed(0)} kWh</td>
+        <td>${f.geracao.toFixed(0)} kWh</td>
+        <td><span style="color:var(--green); font-weight:700;">${f.autoconsumo.toFixed(0)}%</span></td>
+        <td style="font-weight:800; color:var(--blue);">${fmtMoney(f.fatura)}</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--red);">Erro ao carregar faturas.</td></tr>';
+  }
+}
+
+function baixarDoc(nome){
+  showToast(`Download de ${nome}.pdf iniciado (simulado).`);
+}
+
+function renderDicas(){
+  const idCasa = localStorage.getItem('kivora_residencia_id');
+  const grid = document.getElementById('dicasList');
+  
+  // Simulando a busca de dicas baseada nos dados
+  grid.innerHTML = `
+    <div class="tip-card">
+      <div class="tip-icon-wrap" style="background:var(--orange-soft); color:var(--orange);"><i class="fa-solid fa-broom"></i></div>
+      <div class="tip-title">Limpeza dos Painéis</div>
+      <div class="tip-desc">Painéis sujos podem perder até 15% de eficiência. Agende limpeza com o instalador ou lave com água e pano macio.</div>
+      <div class="tip-saving"><i class="fa-solid fa-arrow-trend-up"></i> Recupera até 42 kWh/mês</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon-wrap" style="background:var(--blue-soft); color:var(--blue);"><i class="fa-solid fa-snowflake"></i></div>
+      <div class="tip-title">Ar-condicionado em 24°C</div>
+      <div class="tip-desc">Cada grau a menos no ar-condicionado aumenta o consumo em 7%. Manter em 24°C equilibra conforto e economia.</div>
+      <div class="tip-saving"><i class="fa-solid fa-arrow-trend-up"></i> Economia de R$ 10,80/mês</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon-wrap" style="background:var(--green-soft); color:var(--green);"><i class="fa-solid fa-sun"></i></div>
+      <div class="tip-title">Concentre o Consumo</div>
+      <div class="tip-desc">Ligue máquina de lavar, ferro elétrico e chuveiro entre 10h e 15h, o pico de geração solar.</div>
+      <div class="tip-saving"><i class="fa-solid fa-arrow-trend-up"></i> Aumenta Autoconsumo</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon-wrap" style="background:var(--purple); color:var(--purple);"><i class="fa-solid fa-lightbulb"></i></div>
+      <div class="tip-title">Troque por LED</div>
+      <div class="tip-desc">Lâmpadas LED consomem até 80% menos energia que as fluorescentes e duram muito mais.</div>
+      <div class="tip-saving"><i class="fa-solid fa-arrow-trend-up"></i> Economia de R$ 15,00/mês</div>
+    </div>
+  `;
+}
+
+async function renderAvisos(){
+  const idCasa = localStorage.getItem('kivora_residencia_id');
+  const wrap = document.getElementById('avisosList');
+  wrap.innerHTML = '<div style="text-align:center; padding:40px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:30px; color:var(--navy);"></i></div>';
+
+  try {
+    const res = await fetch(`${API_URL}/analise/${idCasa}/`);
+    const data = await res.json();
+
+    const crit = data.avisos.filter(a => a.severidade === 'critico').length;
+    const boxInversor = document.getElementById('statusInversorBox');
+    const txtInversor = document.getElementById('statusInversorTxt');
+    const iconInversor = document.getElementById('statusInversorIcon');
+    
+    if (crit > 0) {
+      boxInversor.classList.add('critico');
+      txtInversor.textContent = "Atenção Necessária";
+      txtInversor.style.color = "var(--red)";
+    } else {
+      boxInversor.classList.remove('critico');
+      txtInversor.textContent = "Operando Normal";
+      txtInversor.style.color = "var(--green)";
+    }
+
+    if (data.avisos.length === 0) {
+      wrap.innerHTML = '<div style="text-align:center; padding:40px; color:var(--green);"><i class="fa-solid fa-check-circle" style="font-size:40px; margin-bottom:10px;"></i><br>Tudo certo por aqui!</div>';
+      return;
+    }
+
+    wrap.innerHTML = data.avisos.map(i=>`
+      <div class="issue-card sev-${i.severidade}">
+        <div class="issue-top">
+          <div class="it-title">
+            <i class="fa-solid ${i.severidade==='critico'?'fa-triangle-exclamation':i.severidade==='atencao'?'fa-circle-exclamation':'fa-circle-check'}" style="color:${i.severidade==='critico'?'var(--red)':i.severidade==='atencao'?'var(--orange)':'var(--green)'};"></i>
+            ${i.titulo}
+          </div>
+          <span class="sev-badge sev-${i.severidade}">${i.severidade==='critico'?'Crítico':i.severidade==='atencao'?'Atenção':'Normal'}</span>
+        </div>
+        <div class="issue-block"><b>O que aconteceu:</b> ${i.evidencia}</div>
+        <div class="issue-block"><b>O que pode ocorrer:</b> ${i.consequencia}</div>
+        <div class="issue-block"><b>O que fazer:</b> ${i.recomendacao}</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    wrap.innerHTML = '<div style="text-align:center; color:var(--red);">Erro ao carregar avisos.</div>';
+  }
+}
+
+/* =========================================================================
+   RELATÓRIOS
+   ========================================================================= */
+function renderRelList(){
+  const wrap = document.getElementById('relList');
+  document.getElementById('relCount').textContent = relatoriosGerados.length + ' relatórios';
+  
+  if(relatoriosGerados.length === 0) {
+    wrap.innerHTML = '<div style="padding:30px; text-align:center; color:var(--muted);">Nenhum relatório gerado nesta sessão.</div>';
+    return;
+  }
+  
+  wrap.innerHTML = relatoriosGerados.map((r, i) => `
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 24px; border-bottom:1px solid var(--border);">
+      <div style="display:flex; gap:16px; align-items:center;">
+        <div style="width:40px; height:40px; border-radius:10px; background:var(--red-soft); color:var(--red); display:flex; align-items:center; justify-content:center; font-size:18px;"><i class="fa-solid fa-file-pdf"></i></div>
+        <div>
+          <div style="font-weight:800; color:var(--navy); font-size:14px;">${r.titulo}</div>
+          <div style="font-size:12px; color:var(--muted);">${r.data}</div>
+        </div>
+      </div>
+      <button class="btn btn-outline" onclick="verRelatorio(${i})"><i class="fa-solid fa-eye"></i> Ver</button>
+    </div>
+  `).join('');
+}
+
+async function gerarRelatorio() {
+  const tipo = document.getElementById('relTipo').value;
+  const formato = document.getElementById('relFormato').value;
+  const mes = document.getElementById('relMes').value;
+  
+  const idCasa = localStorage.getItem('kivora_residencia_id');
+  const nomeCasa = localStorage.getItem('kivora_user');
+  
+  showToast("Gerando relatório...");
+  
+  try {
+    const res = await fetch(`${API_URL}/dashboard/${idCasa}/`);
+    const data = await res.json();
+    
+    relatoriosGerados.unshift({
+      id: Date.now(),
+      titulo: `Relatório ${tipo} - ${mes}`,
+      data: new Date().toLocaleString('pt-BR'),
+      tipo: tipo,
+      conteudo: data // Salva os dados para visualização
+    });
+    
+    renderRelList();
+    showToast("Relatório gerado com sucesso!");
+  } catch (e) {
+    showToast("Erro ao gerar relatório.");
+  }
+}
+
+function verRelatorio(index) {
+  const r = relatoriosGerados[index];
+  const d = r.conteudo;
+  
+  let html = `
+    <div style="margin-bottom:20px;">
+      <h4 style="color:var(--navy); margin:0 0 10px;">Resumo do Período</h4>
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <tr style="background:#f8fafc;"><td style="padding:8px; border:1px solid #ddd;">Consumo Total</td><td style="padding:8px; border:1px solid #ddd; font-weight:700;">${d.metricas.consumo_total.toFixed(0)} kWh</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Geração Total</td><td style="padding:8px; border:1px solid #ddd; font-weight:700; color:var(--green);">${d.metricas.geracao_total.toFixed(0)} kWh</td></tr>
+        <tr style="background:#f8fafc;"><td style="padding:8px; border:1px solid #ddd;">Autoconsumo</td><td style="padding:8px; border:1px solid #ddd; font-weight:700;">${d.metricas.autoconsumo.toFixed(0)} kWh</td></tr>
+        <tr><td style="padding:8px; border:1px solid #ddd;">Fatura Estimada</td><td style="padding:8px; border:1px solid #ddd; font-weight:700; color:var(--blue);">${fmtMoney(d.metricas.fatura)}</td></tr>
+      </table>
+    </div>
+    <p style="font-size:12px; color:var(--muted);">Este é um relatório demonstrativo gerado com base nas leituras atuais do sistema.</p>
+  `;
+
+  // Prepara os dados do CSV
+  dadosCSVParaBaixar = `Tipo,Consumo (kWh),Geracao (kWh),Fatura (R$)\n${r.tipo},${d.metricas.consumo_total},${d.metricas.geracao_total},${d.metricas.fatura}`;
+
+  openModal(r.titulo, `Gerado em ${r.data}`, html, true);
+}
+
+function baixarCSV() {
+  if (!dadosCSVParaBaixar) return;
+  const blob = new Blob([dadosCSVParaBaixar], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `relatorio_kivora.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast("Download iniciado!");
+}
+
+/* =========================================================================
+   SIMULADOR
+   ========================================================================= */
+async function executarSimulacaoReal(){
+  const btn = document.querySelector('#view-simulador .btn-orange');
+  const resultDiv = document.getElementById('simResultado');
+  const loading = document.getElementById('simLoading');
+  const content = document.getElementById('simContent');
+  
+  const cep = document.getElementById('simCep').value;
+  const qtd = parseInt(document.getElementById('simQtdPaineis').value);
+  const pot = parseFloat(document.getElementById('simPotPainel').value);
+  const tarifa = parseFloat(document.getElementById('simTarifa').value);
+  const potenciaKwp = (qtd * pot) / 1000;
+
+  if (cep.replace(/\D/g,'').length !== 8) { showToast('Digite um CEP válido.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Calculando...';
+  resultDiv.style.display = 'flex';
+  loading.style.display = 'block';
+  content.style.display = 'none';
+
+  try {
+    const resCep = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g,'')}/json/`);
+    const dataCep = await resCep.json();
+    if (dataCep.erro) throw new Error('CEP não encontrado.');
+
+    const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(dataCep.localidade)}&count=1&language=pt&format=json`);
+    const dataGeo = await resGeo.json();
+    const lat = dataGeo.results[0].latitude; const lon = dataGeo.results[0].longitude;
+
+    const resDjango = await fetch(`${API_URL}/previsao-solar/?lat=${lat}&lon=${lon}&tilt=20&azimuth=180&potencia=${potenciaKwp}`);
+    const dataDjango = await resDjango.json();
+    
+    if (dataDjango.status !== 'sucesso') throw new Error('Erro de cálculo.');
+
+    let totalGeracao = 0;
+    dataDjango.previsao.forEach(p => totalGeracao += p.geracao_kwh);
+    const mediaDiaria = totalGeracao / dataDjango.previsao.length;
+    const projecaoMensal = mediaDiaria * 30.4375;
+    
+    const consumoEstimado = 400; // Valor padrão do input
+    const consumoCoberto = Math.min(projecaoMensal, consumoEstimado);
+    const valorEconomia = consumoCoberto * tarifa;
+    const pctCobertura = (projecaoMensal / consumoEstimado) * 100;
+
+    document.getElementById('simValorEconomia').textContent = fmtMoney(valorEconomia);
+    document.getElementById('simPctCobertura').textContent = `${pctCobertura.toFixed(0)}%`;
+    document.getElementById('simMsgFinal').innerHTML = `Seu sistema de <b>${potenciaKwp} kWp</b> gerará cerca de <b>${projecaoMensal.toFixed(0)} kWh/mês</b> em ${dataCep.localidade}.`;
+
+    // Gráfico Donut
+    if (simDonutChartInstance) simDonutChartInstance.destroy();
+    const ctx = document.getElementById('simDonutChart').getContext('2d');
+    simDonutChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Cobertura Solar', 'Rede'],
+        datasets: [{
+          data: [Math.min(pctCobertura, 100), Math.max(0, 100 - pctCobertura)],
+          backgroundColor: ['#2fae5e', '#e3e7ee'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        cutout: '80%',
+        plugins: { tooltip: { enabled: false }, legend: { display: false } }
+      }
+    });
+
+    loading.style.display = 'none';
+    content.style.display = 'block';
+
+  } catch (e) {
+    showToast(e.message);
+    resultDiv.style.display = 'none';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-rocket"></i> Calcular Simulação';
+  }
+}
+
+/* =========================================================================
+   ADMIN E INICIALIZAÇÃO
+   ========================================================================= */
 async function cadastrarNovaEmpresa() {
   const nome_empresa = document.getElementById('empNome').value;
   const cnpj = document.getElementById('empCnpj').value;
@@ -1104,18 +1846,14 @@ async function cadastrarNovaEmpresa() {
   const sucessoDiv = document.getElementById('empSucesso');
 
   if (!nome_empresa || !email_gestor || !password) {
-    erroDiv.textContent = "Preencha os campos obrigatórios.";
-    erroDiv.style.display = 'block';
-    return;
+    erroDiv.textContent = "Preencha os obrigatórios."; erroDiv.style.display = 'block'; return;
   }
 
-  btn.textContent = "Cadastrando...";
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
   btn.disabled = true;
-  erroDiv.style.display = 'none';
-  sucessoDiv.style.display = 'none';
 
   try {
-    const resposta = await fetch('http://127.0.0.1:8000/api/cadastrar-empresa/', {
+    const resposta = await fetch(`${API_URL}/cadastrar-empresa/`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -1123,26 +1861,19 @@ async function cadastrarNovaEmpresa() {
       },
       body: JSON.stringify({ nome_empresa, cnpj, email_gestor, password })
     });
-
     const data = await resposta.json();
 
     if (resposta.ok) {
-      sucessoDiv.textContent = "Empresa cadastrada com sucesso!";
-      sucessoDiv.style.display = 'block';
-      document.getElementById('empNome').value = '';
-      document.getElementById('empCnpj').value = '';
-      document.getElementById('empEmail').value = '';
-      document.getElementById('empSenha').value = '';
-      carregarEmpresas(); // Recarrega a lista
+      sucessoDiv.textContent = "Empresa cadastrada!"; sucessoDiv.style.display = 'block';
+      document.querySelectorAll('#empNome, #empCnpj, #empEmail, #empSenha').forEach(i => i.value = '');
+      carregarEmpresas();
     } else {
-      erroDiv.textContent = data.erro || "Erro ao cadastrar empresa.";
-      erroDiv.style.display = 'block';
+      erroDiv.textContent = data.erro || "Erro."; erroDiv.style.display = 'block';
     }
-  } catch (error) {
-    erroDiv.textContent = "Erro de conexão.";
-    erroDiv.style.display = 'block';
+  } catch (e) {
+    erroDiv.textContent = "Erro de conexão."; erroDiv.style.display = 'block';
   } finally {
-    btn.textContent = "Cadastrar Empresa";
+    btn.innerHTML = '<i class="fa-solid fa-plus"></i> Cadastrar';
     btn.disabled = false;
   }
 }
@@ -1150,347 +1881,33 @@ async function cadastrarNovaEmpresa() {
 async function carregarEmpresas() {
   const tabela = document.getElementById('tabelaEmpresas');
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/listar-empresas/');
+    const res = await fetch(`${API_URL}/listar-empresas/`);
     const empresas = await res.json();
-    
     document.getElementById('countEmpresas').textContent = empresas.length + ' empresas';
-    
     if (empresas.length === 0) {
-      tabela.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--muted);">Nenhuma empresa cadastrada ainda.</td></tr>';
+      tabela.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhuma empresa cadastrada.</td></tr>';
       return;
     }
-    
     tabela.innerHTML = empresas.map(e => `
       <tr>
-        <td><b>${e.nome}</b></td>
+        <td style="font-weight:700; color:var(--navy);">${e.nome}</td>
         <td>${e.cnpj}</td>
         <td>${e.data}</td>
       </tr>
     `).join('');
-  } catch (erro) {
-    tabela.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--red);">Erro ao carregar empresas.</td></tr>';
+  } catch (e) {
+    tabela.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--red);">Erro.</td></tr>';
   }
 }
 
-function sair() {
-  localStorage.removeItem('kivora_token');
-  localStorage.removeItem('kivora_user');
-  localStorage.removeItem('kivora_residencia_id');
-  localStorage.removeItem('kivora_is_master');
-  localStorage.removeItem('kivora_cep_usuario');
-  location.reload();
+/* AI ASSISTANT */
+function toggleAI(open){
+  document.getElementById('aiPanel').classList.toggle('open', open);
+  document.getElementById('overlay').classList.toggle('open', open);
+  if(open) renderChips();
 }
 
-/* =========================================================================
-   RENDERIZAÇÃO DAS TELAS
-   ========================================================================= */
-function populateSelects(){
-  const html = residencias.map(r=>`<option value="${r.id}">${r.nome} — ${r.apelido}</option>`).join('');
-  ['balResidencia','prevResidencia','dicasResidencia'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.innerHTML = html;
-  });
-  const avRes = document.getElementById('avisoResidencia');
-  if(avRes) avRes.innerHTML = '<option value="">Todas</option>' + html;
-}
-
-async function renderDashboard(){
-  let consumoMes = 0, geracaoMes = 0, autoconsumoPct = 0, faturaTotal = 0; 
-  const idCasa = localStorage.getItem('kivora_residencia_id');
-  const nomeUser = localStorage.getItem('kivora_user') || 'Usuário';
-
-  try {
-      if (idCasa) {
-          const resposta = await fetch(`http://127.0.0.1:8000/api/dashboard/${idCasa}/`);
-          if (!resposta.ok) throw new Error("Erro na API");
-          
-          const data = await resposta.json();
-          if (data.metricas) {
-              consumoMes = data.metricas.consumo_total;
-              geracaoMes = data.metricas.geracao_total;
-              autoconsumoPct = geracaoMes > 0 ? (data.metricas.autoconsumo / geracaoMes) * 100 : 0;
-              faturaTotal = data.metricas.fatura;
-              if (data.residencia) {
-                  residencias[0].cep = data.residencia.cep; 
-                  localStorage.setItem('kivora_cep_usuario', data.residencia.cep); // Salva o CEP para a tela de previsão
-              }
-          }
-      }
-  } catch (erro) {
-      console.warn("⚠️ Erro ao carregar dados da casa:", erro);
-  }
-
-  document.getElementById('dashUserName').textContent = nomeUser.split(' ')[0];
-
-  document.getElementById('dashStats').innerHTML = `
-    <div class="stat-card"><div class="ic" style="background:var(--blue)">⚡</div><div><div class="val">${consumoMes.toFixed(0)} kWh</div><div class="lbl">Consumo total do mês</div></div></div>
-    <div class="stat-card"><div class="ic" style="background:var(--orange)">☀️</div><div><div class="val">${geracaoMes.toFixed(0)} kWh</div><div class="lbl">Geração solar do mês</div></div></div>
-    <div class="stat-card"><div class="ic" style="background:var(--green)">🔄</div><div><div class="val">${autoconsumoPct.toFixed(0)}%</div><div class="lbl">Autoconsumo (na hora)</div></div></div>
-    <div class="stat-card"><div class="ic" style="background:var(--orange-2)">💰</div><div><div class="val">${fmtMoney(faturaTotal)}</div><div class="lbl">Fatura prevista</div></div></div>
-  `;
-
-  document.getElementById('dashAlertsList').innerHTML = `<div style="padding:8px 0;font-size:12px;color:var(--muted);">Nenhum aviso no momento.</div>`;
-  
-  document.getElementById('dashProjection').innerHTML = `
-    <div class="proj-header"><div><div class="proj-title">📅 Fechamento do mês</div><div class="proj-period">Baseado nas leituras do banco</div></div></div>
-    <div class="proj-main">${fmtMoney(faturaTotal)}</div>
-    <div class="proj-main-lbl">Fatura prevista para este mês</div>
-  `;
-  
-  document.getElementById('dashForecastPreview').innerHTML = `<div style="grid-column:1/-1; font-size:12px; color:var(--muted); text-align:center; padding:20px;">Use a aba "Previsão de Geração" para ver os dados.</div>`;
-}
-
-function renderBalanco(){
-  const res = residenteIndex[document.getElementById('balResidencia').value] || residencias[0];
-  const chartEl = document.getElementById('balanceChart');
-  const geracaoHoraria = [0,0,0,0,0,0.2,0.8,1.6,2.8,3.8,4.5,4.8,4.6,4.0,3.0,1.8,0.8,0.2,0,0,0,0,0,0];
-  const consumoHorario = [0.2,0.1,0.1,0.1,0.1,0.2,0.4,0.6,0.8,0.7,0.6,0.7,0.9,0.8,0.7,0.6,0.8,1.2,1.5,1.8,2.0,1.8,1.4,0.8];
-  const consumoRedeHorario = consumoHorario.map((c,i)=>Math.max(0, c - geracaoHoraria[i]));
-  const bal = calcularBalanco(res);
-  const maxVal = Math.max(...geracaoHoraria, ...consumoHorario);
-  const scale = 160 / maxVal;
-  let bars = '';
-  for(let i=0; i<24; i+=2){
-    const g = geracaoHoraria[i] || 0;
-    const c = consumoHorario[i] || 0;
-    const rd = consumoRedeHorario[i] || 0;
-    bars += `
-      <div class="balance-bar-wrap">
-        <div class="balance-bar-group">
-          <div class="balance-bar geracao" style="height:${(g*scale).toFixed(0)}px" title="Geração: ${g.toFixed(2)} kWh"></div>
-          <div class="balance-bar consumo" style="height:${(c*scale).toFixed(0)}px" title="Consumo: ${c.toFixed(2)} kWh"></div>
-          <div class="balance-bar rede" style="height:${(rd*scale).toFixed(0)}px" title="Rede: ${rd.toFixed(2)} kWh"></div>
-        </div>
-        <div class="balance-lbl">${String(i).padStart(2,'0')}h</div>
-      </div>
-    `;
-  }
-  chartEl.innerHTML = bars;
-  const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo/bal.geracao)*100 : 0;
-  document.getElementById('balChartTitle').textContent = `Balanço de hoje — ${res.apelido}`;
-  document.getElementById('balChartSub').textContent = `Perfil horário simulado · ${res.potenciaInstalada} kWp instalados`;
-  document.getElementById('balanceSummary').innerHTML = `
-    <div class="bs-item bs-autoconsumo">
-      <div class="bs-val">${autoconsumoPct.toFixed(0)}%</div>
-      <div class="bs-lbl">Autoconsumo<br><span style="font-size:10px;color:var(--green);">${bal.autoconsumo.toFixed(0)} kWh consumidos na hora</span></div>
-    </div>
-    <div class="bs-item bs-injetado">
-      <div class="bs-val">${bal.excedente.toFixed(0)} kWh</div>
-      <div class="bs-lbl">Excedente injetado<br><span style="font-size:10px;color:var(--orange-2);">vira crédito</span></div>
-    </div>
-    <div class="bs-item bs-rede">
-      <div class="bs-val">${bal.consumoRede.toFixed(0)} kWh</div>
-      <div class="bs-lbl">Consumo da rede<br><span style="font-size:10px;color:var(--blue);">paga tarifa cheia</span></div>
-    </div>
-  `;
-}
-
-async function renderPrevisao(){
-  const grid = document.getElementById('forecastGrid');
-  grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--muted);">Buscando previsão...</div>';
-
-  const res = residenteIndex[document.getElementById('prevResidencia').value] || residencias[0];
-  let cep = localStorage.getItem('kivora_cep_usuario') || res.cep || '29160-000'; 
-  let cepLimpo = cep ? cep.replace(/\D/g, '') : '';
-
-  if (!cepLimpo || cepLimpo.length !== 8) {
-      cepLimpo = '29160000';
-      cep = '29160-000';
-  }
-
-  try {
-      const resCep = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-      const dataCep = await resCep.json();
-      if (dataCep.erro) throw new Error('CEP inválido ou não encontrado.');
-      
-      const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(dataCep.localidade)}&count=1&language=pt&format=json`);
-      const dataGeo = await resGeo.json();
-      if (!dataGeo.results || dataGeo.results.length === 0) throw new Error('Cidade não encontrada.');
-
-      const lat = dataGeo.results[0].latitude;
-      const lon = dataGeo.results[0].longitude;
-      const urlDjango = `http://127.0.0.1:8000/api/previsao-solar/?lat=${lat}&lon=${lon}&tilt=20&azimuth=180&potencia=5.4`;
-      
-      const resDjango = await fetch(urlDjango);
-      const dataDjango = await resDjango.json();
-
-      if (dataDjango.status === 'sucesso') {
-          document.getElementById('prevLoc').value = `${dataCep.localidade} - ${dataCep.uf}`;
-          grid.innerHTML = dataDjango.previsao.map((d, i) => `
-            <div class="forecast-day ${i===0?'today':''}">
-              <div class="fd-date">${d.dia_semana}<br><span style="font-size:10px;">${d.dia_mes}</span></div>
-              <div class="fd-icon">${d.icone}</div>
-              <div class="fd-temp">${d.temp_min}–${d.temp_max}°C</div>
-              <div class="fd-gen">${d.geracao_kwh}</div>
-              <div class="fd-gen-lbl">kWh previstos</div>
-            </div>
-          `).join('');
-      } else { throw new Error("Erro no Django"); }
-  } catch (erro) {
-      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--red);">
-          <b>Aviso:</b> ${erro.message}<br><span style="font-size:11px;color:var(--muted);">O CEP salvo no banco pode estar incorreto.</span>
-      </div>`;
-  }
-}
-
-/* =========================================================================
-   RELATÓRIOS, DICAS E AVISOS
-   ========================================================================= */
-let relatorios = [
-  {id:1, titulo:'Resumo mensal', data:'01/08/2026', tipo:'Resumo mensal'},
-  {id:2, titulo:'Balanço energético', data:'01/08/2026', tipo:'Balanço energético'},
-  {id:3, titulo:'Desempenho do sistema', data:'01/08/2026', tipo:'Desempenho solar'},
-];
-
-function renderRelList(){
-  document.getElementById('relCount').textContent = relatorios.length + ' relatórios';
-  document.getElementById('relList').innerHTML = relatorios.map(r=>`
-    <div class="report-list-item" style="display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div style="width:34px;height:34px;border-radius:8px;background:var(--orange-soft);color:var(--orange-2);display:flex;align-items:center;justify-content:center;font-size:15px;">📄</div>
-        <div>
-          <div style="font-size:13px;font-weight:600;">${r.titulo}</div>
-          <div style="font-size:11px;color:var(--muted);">Gerado em ${r.data} · ${r.tipo}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-outline btn-sm" onclick="showToast('Visualização simulada')">👁 Ver</button>
-        <button class="icon-btn" onclick="showToast('Download simulado')">⬇</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function gerarRelatorio(){
-  const tipo = document.getElementById('relTipo').value;
-  relatorios.unshift({ id: relatorios.length+1, titulo: tipo, data: new Date().toLocaleDateString('pt-BR'), tipo: tipo });
-  renderRelList();
-  showToast('Relatório gerado com sucesso');
-}
-
-function renderDicas(){
-  const res = residenteIndex[document.getElementById('dicasResidencia').value] || residencias[0];
-  const bal = calcularBalanco(res);
-  const autoconsumoPct = bal.geracao > 0 ? (bal.autoconsumo/bal.geracao)*100 : 0;
-  const dicas = [];
-  if(autoconsumoPct < 60){
-    dicas.push({ icone:'🕐', titulo:'Concentre consumo no horário solar', desc:'Sua autoconsumo é de ' + autoconsumoPct.toFixed(0) + '%. Programe máquina de lavar, lava-louças e chuveiro elétrico entre 10h e 15h, quando a geração é maior.', economia:'Economia estimada: ' + fmtMoney(bal.excedente * res.tarifa * FIO_B_PART_TARIFA * FIO_B_PERCENT) + '/mês' });
-  }
-  dicas.push({ icone:'🧹', titulo:'Limpeza dos painéis a cada 3 meses', desc:'Painéis sujos podem perder até 15% de eficiência. Agende limpeza com o instalador ou faça você mesmo com água e pano macio.', economia:'Recupera até ' + (bal.geracao * 0.10).toFixed(0) + ' kWh/mês' });
-  dicas.push({ icone:'❄️', titulo:'Ajuste o ar-condicionado para 24°C', desc:'Cada grau a menos no ar-condicionado aumenta o consumo em cerca de 7%. Manter em 24°C equilibra conforto e economia.', economia:'Economia estimada: ' + fmtMoney(15 * res.tarifa) + '/mês' });
-  
-  document.getElementById('dicasList').innerHTML = dicas.map(d=>`
-    <div class="tip-card">
-      <div class="tip-icon">${d.icone}</div>
-      <div class="tip-content">
-        <div class="tip-title">${d.titulo}</div>
-        <div class="tip-desc">${d.desc}</div>
-        <div class="tip-saving">${d.economia}</div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderAvisos(){
-  const sevF = document.getElementById('avisoSeveridade').value;
-  const resF = document.getElementById('avisoResidencia').value;
-  let lista = allIssues.filter(i=>i.severidade!=='normal');
-  if(sevF) lista = lista.filter(i=>i.severidade===sevF);
-  if(resF) lista = lista.filter(i=>i.residenciaId===resF);
-  const wrap = document.getElementById('avisosList');
-  if(!lista.length){
-    wrap.innerHTML = '<div class="table-card"><div style="text-align:center;padding:60px 20px;color:var(--muted);"><div style="font-size:36px;margin-bottom:10px;">🟢</div><h4 style="margin:0 0 6px;color:var(--ink);">Nenhum aviso para os filtros</h4><p style="font-size:12.5px;">Sistema operando normalmente.</p></div></div>';
-    return;
-  }
-  wrap.innerHTML = lista.map(i=>`
-    <div class="issue-card sev-${i.severidade}">
-      <div class="issue-top">
-        <div>
-          <div class="it-title">${i.severidade==='critico'?'🔴':'🟠'} ${i.titulo}</div>
-          <div class="it-meta">${i.residenciaNome}</div>
-        </div>
-        <span class="sev-badge sev-${i.severidade}">${i.severidade==='critico'?'Crítico':'Atenção'}</span>
-      </div>
-      <div class="issue-block"><b>O que aconteceu:</b> ${i.evidencia}</div>
-      <div class="issue-block"><b>O que pode ocorrer:</b> ${i.consequencia}</div>
-      <div class="issue-block"><b>O que fazer:</b> ${i.recomendacao}</div>
-      <div class="issue-actions">
-        <button class="btn btn-orange btn-sm" onclick="showToast('Ocorrência criada — equipe notificada')">Criar ocorrência</button>
-        <button class="btn btn-outline btn-sm" onclick="showToast('Detalhes técnicos')">Ver dados</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-/* =========================================================================
-   SIMULADOR REAL
-   ========================================================================= */
-async function executarSimulacaoReal() {
-  const btn = document.getElementById('btnCalcularSimulacao');
-  const loading = document.getElementById('simLoading');
-  const resultDiv = document.getElementById('simResultado');
-  const cepInput = document.getElementById('simCep').value.trim();
-  const qtdPaineis = parseInt(document.getElementById('simQtdPaineis').value) || 10;
-  const potPainel = parseFloat(document.getElementById('simPotPainel').value) || 550;
-  const consumoMensal = parseFloat(document.getElementById('simConsumo').value) || 400;
-  const tarifa = parseFloat(document.getElementById('simTarifa').value) || 0.85;
-  const inclinacao = parseInt(document.getElementById('simInclinacao').value) || 20;
-  const azimute = parseInt(document.getElementById('simAzimute').value) || 180;
-  const cepLimpo = cepInput.replace(/\D/g, '');
-  if (cepLimpo.length !== 8) { showToast('Digite um CEP válido com 8 números.'); return; }
-  btn.disabled = true; btn.textContent = 'Buscando dados...'; loading.style.display = 'block'; resultDiv.style.display = 'none';
-  try {
-    const resCep = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-    const dataCep = await resCep.json();
-    if (dataCep.erro) throw new Error('CEP não encontrado.');
-    const cidade = dataCep.localidade; const uf = dataCep.uf; const nomeEstado = dataCep.estado;
-    const resGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cidade)}&count=10&language=pt&format=json`);
-    const dataGeo = await resGeo.json();
-    if (!dataGeo.results || dataGeo.results.length === 0) throw new Error('Coordenadas não encontradas.');
-    let local = dataGeo.results.find(r => r.country_code === 'BR' && r.admin1 === nomeEstado && r.name === cidade) || dataGeo.results[0];
-    const lat = local.latitude; const lon = local.longitude; const potenciaKwp = (qtdPaineis * potPainel) / 1000;
-    const timestamp = new Date().getTime();
-    const urlDjango = `http://127.0.0.1:8000/api/previsao-solar/?lat=${lat}&lon=${lon}&tilt=${inclinacao}&azimuth=${azimute}&potencia=${potenciaKwp}&t=${timestamp}`;
-    const resDjango = await fetch(urlDjango);
-    const dataDjango = await resDjango.json();
-    if (dataDjango.status !== 'sucesso') throw new Error('Erro ao calcular no Django.');
-    const geracaoDiaria = {};
-    dataDjango.previsao.forEach(p => geracaoDiaria[p.data] = p.geracao_kwh);
-    const diasArr = Object.keys(geracaoDiaria);
-    const totalGeracao = Object.values(geracaoDiaria).reduce((a, b) => a + b, 0);
-    const mediaDiaria = totalGeracao / diasArr.length;
-    const projecaoMensal = mediaDiaria * 30.4375;
-    const consumoCoberto = Math.min(projecaoMensal, consumoMensal);
-    const valorBruto = consumoCoberto * tarifa;
-    const percentualCobertura = consumoMensal > 0 ? (projecaoMensal / consumoMensal) * 100 : 0;
-    document.getElementById('simResumoKpis').innerHTML = `
-      <div class="stat-card" style="box-shadow:none; padding:10px;"><div class="ic" style="background:var(--blue); width:32px; height:32px; font-size:14px;">📍</div><div><div class="val" style="font-size:14px;">${cidade}/${uf}</div><div class="lbl">Localização</div></div></div>
-      <div class="stat-card" style="box-shadow:none; padding:10px;"><div class="ic" style="background:var(--orange); width:32px; height:32px; font-size:14px;">⚡</div><div><div class="val" style="font-size:14px;">${potenciaKwp.toFixed(2)} kWp</div><div class="lbl">Potência</div></div></div>
-      <div class="stat-card" style="box-shadow:none; padding:10px;"><div class="ic" style="background:var(--green); width:32px; height:32px; font-size:14px;">📈</div><div><div class="val" style="font-size:14px;">${mediaDiaria.toFixed(1)} kWh</div><div class="lbl">Média Diária</div></div></div>
-      <div class="stat-card" style="box-shadow:none; padding:10px;"><div class="ic" style="background:var(--purple); width:32px; height:32px; font-size:14px;">💰</div><div><div class="val" style="font-size:14px;">R$ ${valorBruto.toFixed(2)}</div><div class="lbl">Economia Estimada</div></div></div>
-    `;
-    document.getElementById('simMensagemFinal').innerHTML = `A geração projetada para 1 mês é de <b>${projecaoMensal.toFixed(0)} kWh</b>.<br>Isso cobre aproximadamente <b>${percentualCobertura.toFixed(1)}%</b> do seu consumo (${consumoMensal} kWh).`;
-    const maxGeracao = Math.max(...diasArr.map(d => geracaoDiaria[d]));
-    const scale = 150 / maxGeracao;
-    let htmlBarras = '';
-    diasArr.slice(0, 7).forEach(dia => {
-      const val = geracaoDiaria[dia];
-      const altura = Math.round(val * scale);
-      const labelDia = dia.split('-').slice(1).reverse().join('/');
-      htmlBarras += `<div class="balance-bar-wrap"><div class="balance-bar-group"><div class="balance-bar geracao" style="height:${altura}px; width:20px;" title="${val.toFixed(1)} kWh"></div></div><div class="balance-lbl" style="margin-top:6px;">${labelDia}</div></div>`;
-    });
-    document.getElementById('simGraficoBarras').innerHTML = htmlBarras;
-    resultDiv.style.display = 'grid';
-  } catch (error) {
-    console.error(error); showToast('Erro na simulação: ' + error.message);
-  } finally {
-    btn.disabled = false; btn.textContent = '🚀 Calcular Simulação Real'; loading.style.display = 'none';
-  }
-}
-
-/* =========================================================================
-   ASSISTENTE KIVORA
-   ========================================================================= */
+/* AI ASSISTANT - LÓGICA DE CHAT */
 const aiSuggestions = [
   'Quanto vou pagar este mês?',
   'Qual a previsão de geração para amanhã?',
@@ -1498,45 +1915,70 @@ const aiSuggestions = [
   'Como aumentar meu autoconsumo?',
   'Vale a pena ligar o ar-condicionado agora?',
 ];
-function renderChips(){ document.getElementById('aiChips').innerHTML = aiSuggestions.map(s=>`<button class="chip" onclick="askAI('${s.replace(/'/g,"\\'")}')">${s}</button>`).join(''); }
-function handleAIKeydown(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askAI(); } }
-function scrollAIToBottom(){ const b = document.getElementById('aiBody'); if(b) requestAnimationFrame(()=>b.scrollTo({top:b.scrollHeight, behavior:'smooth'})); }
+
+function renderChips(){ 
+  document.getElementById('aiChips').innerHTML = aiSuggestions.map(s=>`<button class="chip" onclick="askAI('${s.replace(/'/g,"\\'")}')">${s}</button>`).join(''); 
+}
+
+function handleAIKeydown(e){ 
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askAI(); } 
+}
+
+function scrollAIToBottom(){ 
+  const b = document.getElementById('aiBody'); 
+  if(b) requestAnimationFrame(()=>b.scrollTo({top:b.scrollHeight, behavior:'smooth'})); 
+}
+
 function appendAIMessage(html){
   const log = document.getElementById('aiChatLog');
-  const msg = document.createElement('div'); msg.className = 'chat-msg ai'; msg.innerHTML = html;
-  log.appendChild(msg); scrollAIToBottom();
+  const msg = document.createElement('div'); 
+  msg.className = 'chat-msg ai'; 
+  msg.innerHTML = html;
+  log.appendChild(msg); 
+  scrollAIToBottom();
 }
+
 function askAI(preset){
   const input = document.getElementById('aiQuestion');
   const q = (typeof preset === 'string' ? preset : input.value).trim();
   if(!q) return;
+  
   const log = document.getElementById('aiChatLog');
-  const userMsg = document.createElement('div'); userMsg.className = 'chat-msg user'; userMsg.textContent = q;
+  const userMsg = document.createElement('div'); 
+  userMsg.className = 'chat-msg user'; 
+  userMsg.textContent = q;
   log.appendChild(userMsg);
+  
   if(typeof preset !== 'string'){ input.value=''; input.style.height='auto'; }
   scrollAIToBottom();
+  
   const lower = q.toLowerCase();
-  const res = residencias[0];
-  const bal = calcularBalanco(res);
+  const nome = localStorage.getItem('kivora_user') || 'Usuário';
   let answer;
+  
   if(/quanto.*(pagar|conta|fatura)|fatura.*(prevista|mês)|vou pagar/.test(lower)){
-    answer = `Sua <b>fatura prevista</b> para este mês é de <b>${fmtMoney(bal.faturaTotal)}</b> (margem ±12%).<br><br>Detalhamento:<br>• Consumo da rede: ${bal.consumoRede.toFixed(0)} kWh = ${fmtMoney(bal.custoRede)}<br>• Fio B sobre excedente: ${fmtMoney(bal.custoFioB)}<br><br>Você já economizou <b>${fmtMoney(bal.economiaSolar)}</b> este mês graças ao sistema solar.`;
+    answer = `Sua <b>fatura prevista</b> para este mês está em análise no painel. Acesse a aba "Histórico de Faturas" ou "Balanço Energético" para ver os detalhes!`;
   }
   else if(/simula[cç][aã]o|simulador|cep/.test(lower)){
-    answer = `Para usar o simulador real, clique na aba <b>"Simulador Real 🌍"</b> no menu lateral. Lá você pode digitar o CEP da sua casa e o sistema vai calcular a geração exata.`;
+    answer = `Para simular a economia, acesse a aba <b>"Simulador Real"</b> no menu lateral. Lá você pode digitar o CEP da sua casa e o sistema fará o cálculo exato.`;
   }
   else if(/previs[aã]o.*(gera[cç][aã]o|solar|amanh[aã])|vai gerar/.test(lower)){
-    answer = `<b>Previsão de geração:</b><br>Verifique a aba de Previsão para os dados atualizados do seu CEP.`;
+    answer = `<b>Previsão de geração:</b> Verifique a aba de "Previsão de Geração" para ver os dados meteorológicos atualizados do seu CEP.`;
   }
-  else { answer = `Não encontrei dados suficientes para responder a essa pergunta. Posso ajudar com: fatura, previsão de geração, autoconsumo ou uso do simulador real.`; }
-  setTimeout(()=>appendAIMessage(answer), 400);
+  else if(/economizando|economia|quanto.*economiz/.test(lower)){
+    answer = `Você pode acompanhar sua economia real acessando o <b>Balanço Energético</b> e a aba de <b>Comunidade</b>, onde comparamos seu desempenho com a média da região!`;
+  }
+  else {
+    answer = `Olá, ${nome.split(' ')[0]}! Sou o Assistente Kivora. Posso te ajudar a navegar pelo sistema. Tente perguntar sobre "fatura", "previsão" ou "simulador".`;
+  }
+  
+  setTimeout(()=>appendAIMessage(answer), 600);
 }
 
 /* =========================================================================
-   INICIALIZAÇÃO
+   INICIALIZAÇÃO GERAL
    ========================================================================= */
 window.onload = () => {
-  populateSelects();
   renderChips();
   
   const token = localStorage.getItem('kivora_token');
@@ -1545,18 +1987,17 @@ window.onload = () => {
   
   if (token && nome) {
     document.getElementById('telaLogin').style.display = 'none';
-    document.getElementById('telaCadastro').style.display = 'none';
     document.getElementById('appPrincipal').style.display = 'flex';
     
-    document.querySelector('.user-chip .avatar').textContent = nome.charAt(0);
+    document.getElementById('topUserAvatar').textContent = nome.charAt(0);
     document.getElementById('topUserName').textContent = nome;
+    document.getElementById('topUserRole').textContent = isMaster ? 'Admin Master' : 'Proprietário';
     
     if (isMaster) {
       document.getElementById('menuAdmin').style.display = 'block';
-    } else {
-      document.getElementById('menuAdmin').style.display = 'none';
     }
     
+    // Chama a renderização do dashboard logo que a página abre
     renderDashboard();
   }
 };

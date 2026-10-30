@@ -13,6 +13,7 @@ from .serializers import ResidenciaSerializer, LeituraSerializer
 from django.shortcuts import render
 import requests
 import datetime
+from datetime import timedelta
 
 def home(request):
     return render(request, 'index.html')
@@ -55,6 +56,7 @@ class LoginView(APIView):
                 "status": "sucesso",
                 "access": str(refresh.access_token),
                 "nome": user.first_name or user.username,
+                "email": user.email,
                 "residencia_id": residencia_id,
                 "is_master": user.is_superuser,
                 "empresa_id": empresa_id
@@ -81,16 +83,9 @@ class RegisterClienteView(APIView):
             with transaction.atomic():
                 user = User.objects.create_user(username=email, email=email, password=password, first_name=nome)
                 Residencia.objects.create(
-                    usuario=user, 
-                    nome=nome, 
-                    apelido="Minha Casa", 
-                    cep=cep, 
-                    cidade="A definir", 
-                    estado="BR", 
-                    potencia_instalada=5.4, 
-                    inclinacao=20, 
-                    orientacao="Norte", 
-                    tarifa=0.85
+                    usuario=user, nome=nome, apelido="Minha Casa", cep=cep, 
+                    cidade="A definir", estado="BR", potencia_instalada=5.4, 
+                    inclinacao=20, orientacao="Norte", tarifa=0.85
                 )
             return Response({"status": "sucesso", "mensagem": "Conta criada com sucesso!"})
         except Exception as e:
@@ -116,17 +111,9 @@ class CadastrarEmpresaView(APIView):
                 empresa = Empresa.objects.create(nome=nome_empresa, cnpj=cnpj)
                 user = User.objects.create_user(username=email_gestor, email=email_gestor, password=password, first_name=nome_empresa)
                 Residencia.objects.create(
-                    empresa=empresa, 
-                    usuario=user, 
-                    nome=nome_empresa, 
-                    apelido="Sede", 
-                    cep="00000-000", 
-                    cidade="A definir", 
-                    estado="BR", 
-                    potencia_instalada=10.0,
-                    inclinacao=20,
-                    orientacao="Norte",
-                    tarifa=0.85
+                    empresa=empresa, usuario=user, nome=nome_empresa, apelido="Sede", 
+                    cep="00000-000", cidade="A definir", estado="BR", potencia_instalada=10.0,
+                    inclinacao=20, orientacao="Norte", tarifa=0.85
                 )
             return Response({"status": "sucesso", "mensagem": "Empresa cadastrada!"})
         except Exception as e:
@@ -144,6 +131,22 @@ class ListarEmpresasView(APIView):
                 "data": emp.data_cadastro.strftime('%d/%m/%Y')
             })
         return Response(dados)
+
+class UpdateResidenciaView(APIView):
+    def patch(self, request, residencia_id):
+        try:
+            res = Residencia.objects.get(id=residencia_id)
+        except Residencia.DoesNotExist:
+            return Response({"erro": "Residência não encontrada"}, status=404)
+
+        # Atualiza apenas os campos enviados
+        if 'nome' in request.data: res.nome = request.data['nome']
+        if 'cep' in request.data: res.cep = request.data['cep']
+        if 'tarifa' in request.data: res.tarifa = request.data['tarifa']
+        if 'potencia_instalada' in request.data: res.potencia_instalada = request.data['potencia_instalada']
+        
+        res.save()
+        return Response({"status": "sucesso", "mensagem": "Dados atualizados!"})
 
 class PrevisaoSolarView(APIView):
     def get(self, request):
@@ -251,3 +254,158 @@ class DashboardView(APIView):
                 "fatura": fatura_estimada
             }
         })
+
+class AnaliseResidenciaView(APIView):
+    def get(self, request, residencia_id):
+        try:
+            res = Residencia.objects.get(id=residencia_id)
+        except Residencia.DoesNotExist:
+            return Response({"erro": "Residência não encontrada"}, status=404)
+
+        periodo = request.query_params.get('periodo', 'semana')
+        
+        agora = datetime.datetime.now()
+        if periodo == 'hoje':
+            leituras = res.leituras.filter(data_hora__date=agora.date()).order_by('data_hora')
+            chave_agrupamento = lambda l: l.data_hora.strftime('%H:00')
+        elif periodo == 'mes':
+            leituras = res.leituras.filter(data_hora__month=agora.month, data_hora__year=agora.year).order_by('data_hora')
+            chave_agrupamento = lambda l: l.data_hora.strftime('%d/%m')
+        else: # semana
+            sete_dias_atras = agora - timedelta(days=7)
+            leituras = res.leituras.filter(data_hora__gte=sete_dias_atras).order_by('data_hora')
+            chave_agrupamento = lambda l: l.data_hora.strftime('%d/%m')
+
+        agrupado = {}
+        for l in leituras:
+            chave = chave_agrupamento(l)
+            if chave not in agrupado:
+                agrupado[chave] = {"data": chave, "consumo": 0, "geracao": 0}
+            agrupado[chave]["consumo"] += float(l.consumo_kwh)
+            agrupado[chave]["geracao"] += float(l.geracao_kwh)
+
+        dados_grafico = list(agrupado.values())
+        avisos = []
+
+        if not dados_grafico:
+            avisos.append({
+                "tipo": "normal", "severidade": "normal",
+                "titulo": "Nenhuma leitura encontrada",
+                "evidencia": "Ainda não há dados de consumo ou geração para esta residência neste período.",
+                "consequencia": "Não é possível analisar o desempenho do sistema.",
+                "recomendacao": "Aguarde a sincronização do medidor ou cadastre leituras."
+            })
+        else:
+            total_consumo = sum(d["consumo"] for d in dados_grafico)
+            total_geracao = sum(d["geracao"] for d in dados_grafico)
+            
+            if total_consumo > total_geracao * 1.2:
+                avisos.append({
+                    "tipo": "consumo_alto", "severidade": "atencao",
+                    "titulo": "Consumo acima da geração",
+                    "evidencia": f"Seu consumo ({total_consumo:.0f} kWh) está maior que a geração solar ({total_geracao:.0f} kWh).",
+                    "consequencia": "Você está comprando mais energia da rede, o que aumenta o valor da fatura.",
+                    "recomendacao": "Tente concentrar o uso de equipamentos elétricos durante o dia (10h às 15h) para usar a energia solar."
+                })
+                
+            for d in dados_grafico:
+                if d["geracao"] == 0:
+                    avisos.append({
+                        "tipo": "inversor_offline", "severidade": "critico",
+                        "titulo": f"Falha na geração em {d['data']}",
+                        "evidencia": f"Não houve geração solar registrada no período {d['data']}.",
+                        "consequencia": "O inversor pode estar desligado ou há falha de comunicação.",
+                        "recomendacao": "Verifique o status do inversor e a conexão de internet."
+                    })
+
+            if not avisos:
+                avisos.append({
+                    "tipo": "normal", "severidade": "normal",
+                    "titulo": "Sistema operando normalmente",
+                    "evidencia": f"No período, a geração ({total_geracao:.0f} kWh) atendeu ou superou o consumo ({total_consumo:.0f} kWh).",
+                    "consequencia": "Nenhuma ação necessária no momento.",
+                    "recomendacao": "Continue monitorando para manter o alto autoconsumo."
+                })
+
+        return Response({"grafico": dados_grafico, "avisos": avisos})
+
+class HistoricoFaturasView(APIView):
+    def get(self, request, residencia_id):
+        try:
+            res = Residencia.objects.get(id=residencia_id)
+        except Residencia.DoesNotExist:
+            return Response({"erro": "Residência não encontrada"}, status=404)
+
+        leituras = res.leituras.all().order_by('data_hora')
+        meses = {}
+        for l in leituras:
+            mes_str = l.data_hora.strftime('%m/%Y')
+            if mes_str not in meses:
+                meses[mes_str] = {"mes": mes_str, "consumo": 0, "geracao": 0}
+            meses[mes_str]["consumo"] += float(l.consumo_kwh)
+            meses[mes_str]["geracao"] += float(l.geracao_kwh)
+
+        resultado = []
+        tarifa = float(res.tarifa)
+        for mes, dados in meses.items():
+            autoconsumo = min(dados["consumo"], dados["geracao"])
+            excedente = max(0, dados["geracao"] - dados["consumo"])
+            consumo_rede = max(0, dados["consumo"] - dados["geracao"])
+            
+            custo_rede = consumo_rede * tarifa
+            custo_fio_b = excedente * 0.28 * 0.60 * tarifa
+            fatura = custo_rede + custo_fio_b
+            
+            resultado.append({
+                "mes": mes,
+                "consumo": dados["consumo"],
+                "geracao": dados["geracao"],
+                "autoconsumo": (autoconsumo/dados["geracao"]*100) if dados["geracao"] > 0 else 0,
+                "fatura": fatura
+            })
+        
+        return Response(resultado[::-1]) # Ordem decrescente
+
+class MapaResidenciasView(APIView):
+    def get(self, request):
+        residencias = Residencia.objects.exclude(cep__isnull=True).exclude(cep="")
+        dados = []
+        
+        # Coordenadas base (Serra/ES) como fallback
+        import random 
+        
+        for res in residencias:
+            cep_limpo = ''.join(filter(str.isdigit, res.cep))
+            lat, lng = -20.128, -40.307 # Default
+            
+            if len(cep_limpo) == 8:
+                try:
+                    # ViaCEP
+                    res_cep = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/", timeout=5)
+                    data_cep = res_cep.json()
+                    if not data_cep.get('erro'):
+                        cidade = data_cep['localidade']
+                        # Open-Meteo Geo
+                        res_geo = requests.get(f"https://geocoding-api.open-meteo.com/v1/search?name={cidade}&count=1&language=pt&format=json", timeout=5)
+                        data_geo = res_geo.json()
+                        if data_geo.get('results'):
+                            lat = data_geo['results'][0]['latitude']
+                            lng = data_geo['results'][0]['longitude']
+                except:
+                    pass
+            
+            # Simula um status e dados aleatórios para o mapa ficar vivo
+            geracao = res.leituras.aggregate(Sum('geracao_kwh'))['geracao_kwh__sum'] or 0
+            status = "online" if float(geracao) > 0 else "offline"
+            
+            dados.append({
+                "id": res.id,
+                "nome": res.nome,
+                "apelido": res.apelido,
+                "lat": lat,
+                "lng": lng,
+                "status": status,
+                "potencia": float(res.potencia_instalada)
+            })
+            
+        return Response(dados)
